@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { SocialDashboard } from './SocialDashboard';
 import { LoginModal } from './LoginModal';
 import { GuestPortal } from './GuestPortal';
+import ProjectView from './ProjectView';
+import FieldBeamMeetings from './FieldBeamMeetings';
+import { CollaborationPanel } from './collaboration/CollaborationPanel';
 import { collaborationService } from '../services/enhancedCollaboration';
 
 interface AppUser {
@@ -14,8 +17,12 @@ interface AppUser {
 interface AppState {
   currentUser: AppUser | null;
   showLogin: boolean;
-  currentView: 'login' | 'dashboard' | 'guest-portal';
+  currentView: 'login' | 'dashboard' | 'guest-portal' | 'project' | 'meetings' | 'threads' | 'subscription';
   isDeveloperMode: boolean;
+  currentProjectId: string | null;
+  currentMeetingUrl: string | null;
+  currentThreadId: string | null;
+  navigationHistory: string[];
 }
 
 export const TeamBeamApp: React.FC = () => {
@@ -23,7 +30,11 @@ export const TeamBeamApp: React.FC = () => {
     currentUser: null,
     showLogin: true,
     currentView: 'login',
-    isDeveloperMode: true // Enable developer features
+    isDeveloperMode: true, // Enable developer features
+    currentProjectId: null,
+    currentMeetingUrl: null,
+    currentThreadId: null,
+    navigationHistory: []
   });
 
   useEffect(() => {
@@ -67,26 +78,76 @@ export const TeamBeamApp: React.FC = () => {
 
   const handleOpenProject = (projectId: string) => {
     console.log('Opening project:', projectId);
-    // TODO: Navigate to project view
+    setState(prev => ({
+      ...prev,
+      currentView: 'project',
+      currentProjectId: projectId,
+      navigationHistory: [...prev.navigationHistory, prev.currentView]
+    }));
   };
 
   const handleJoinMeeting = (meetingUrl: string) => {
     console.log('Joining meeting:', meetingUrl);
-    // TODO: Open meeting interface
+    setState(prev => ({
+      ...prev,
+      currentView: 'meetings',
+      currentMeetingUrl: meetingUrl,
+      navigationHistory: [...prev.navigationHistory, prev.currentView]
+    }));
   };
 
   const handleViewThread = (threadId: string) => {
     console.log('Viewing thread:', threadId);
-    // TODO: Open thread/conversation view
+    setState(prev => ({
+      ...prev,
+      currentView: 'threads',
+      currentThreadId: threadId,
+      navigationHistory: [...prev.navigationHistory, prev.currentView]
+    }));
   };
 
   const handleUpgrade = () => {
     console.log('Upgrade requested');
-    // TODO: Open subscription/upgrade flow
     setState(prev => ({
       ...prev,
-      currentView: 'login',
-      showLogin: true
+      currentView: 'subscription',
+      navigationHistory: [...prev.navigationHistory, prev.currentView]
+    }));
+  };
+
+  const handleNavigateBack = () => {
+    const previousView = state.navigationHistory[state.navigationHistory.length - 1];
+    if (previousView) {
+      setState(prev => ({
+        ...prev,
+        currentView: previousView as AppState['currentView'],
+        navigationHistory: prev.navigationHistory.slice(0, -1),
+        // Clear context-specific data when navigating back
+        currentProjectId: previousView === 'project' ? prev.currentProjectId : null,
+        currentMeetingUrl: previousView === 'meetings' ? prev.currentMeetingUrl : null,
+        currentThreadId: previousView === 'threads' ? prev.currentThreadId : null
+      }));
+    } else {
+      // Default back to dashboard
+      setState(prev => ({
+        ...prev,
+        currentView: 'dashboard',
+        currentProjectId: null,
+        currentMeetingUrl: null,
+        currentThreadId: null,
+        navigationHistory: []
+      }));
+    }
+  };
+
+  const handleNavigateToDashboard = () => {
+    setState(prev => ({
+      ...prev,
+      currentView: 'dashboard',
+      currentProjectId: null,
+      currentMeetingUrl: null,
+      currentThreadId: null,
+      navigationHistory: []
     }));
   };
 
@@ -102,6 +163,52 @@ export const TeamBeamApp: React.FC = () => {
       );
     }
 
+    // Navigation header for non-dashboard views
+    const renderNavigationHeader = (title: string) => (
+      <div style={{
+        background: 'var(--tb-surface-primary)',
+        borderBottom: '1px solid var(--tb-border-primary)',
+        padding: '12px 16px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        zIndex: 100
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <button
+            onClick={handleNavigateBack}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: 'var(--tb-text-primary)',
+              cursor: 'pointer',
+              padding: '4px',
+              fontSize: '18px'
+            }}
+            title="Go back"
+          >
+            ←
+          </button>
+          <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}>{title}</h2>
+        </div>
+        <button
+          onClick={handleNavigateToDashboard}
+          style={{
+            background: 'var(--tb-accent-primary)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '6px',
+            padding: '6px 12px',
+            fontSize: '12px',
+            cursor: 'pointer',
+            fontWeight: 600
+          }}
+        >
+          Dashboard
+        </button>
+      </div>
+    );
+
     switch (state.currentView) {
       case 'dashboard':
         return (
@@ -112,6 +219,58 @@ export const TeamBeamApp: React.FC = () => {
             onJoinMeeting={handleJoinMeeting}
             onViewThread={handleViewThread}
           />
+        );
+      
+      case 'project':
+        return (
+          <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+            {renderNavigationHeader(`Project: ${state.currentProjectId || 'Unknown'}`)}
+            <div style={{ flex: 1, overflow: 'hidden' }}>
+              <ProjectView project={state.currentProjectId} />
+            </div>
+          </div>
+        );
+      
+      case 'meetings':
+        return (
+          <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+            {renderNavigationHeader('FieldBeam Meetings')}
+            <div style={{ flex: 1, overflow: 'hidden' }}>
+              <FieldBeamMeetings />
+            </div>
+          </div>
+        );
+      
+      case 'threads':
+        return (
+          <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+            {renderNavigationHeader(`Thread: ${state.currentThreadId || 'Discussion'}`)}
+            <div style={{ flex: 1, overflow: 'hidden' }}>
+              <CollaborationPanel
+                projectId={state.currentProjectId || 'default-project'}
+                currentSheet={state.currentThreadId || 'general'}
+                currentRevision="latest"
+                currentUserId={state.currentUser.id}
+                currentUserName={state.currentUser.name}
+              />
+            </div>
+          </div>
+        );
+      
+      case 'subscription':
+        return (
+          <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+            {renderNavigationHeader('Subscription & Upgrade')}
+            <div style={{ flex: 1, overflow: 'hidden' }}>
+              <GuestPortal
+                onUpgrade={() => {
+                  console.log('Subscription upgrade completed');
+                  handleNavigateToDashboard();
+                }}
+                onClose={handleNavigateBack}
+              />
+            </div>
+          </div>
         );
       
       case 'guest-portal':

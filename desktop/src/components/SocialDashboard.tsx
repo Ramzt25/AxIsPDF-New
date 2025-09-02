@@ -1,36 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { collaborationService } from '../services/collaboration';
+import { dashboardDataService, type ActivityItem, type MeetingInvite, type DashboardData } from '../services/dashboardData';
 import './SocialDashboard.css';
-
-interface ActivityItem {
-  id: string;
-  type: 'message' | 'task' | 'rfi' | 'meeting' | 'comment' | 'share';
-  projectId: string;
-  projectName: string;
-  sheetName?: string;
-  title: string;
-  description: string;
-  authorName: string;
-  authorAvatar?: string;
-  timestamp: string;
-  priority?: 'low' | 'medium' | 'high' | 'critical';
-  status?: 'open' | 'in-progress' | 'resolved' | 'closed';
-  participants?: string[];
-  attachments?: number;
-  region?: [number, number, number, number];
-}
-
-interface MeetingInvite {
-  id: string;
-  title: string;
-  projectName: string;
-  scheduledTime: string;
-  organizer: string;
-  attendees: string[];
-  agenda?: string;
-  meetingUrl?: string;
-  status: 'pending' | 'accepted' | 'declined';
-}
 
 interface SocialDashboardProps {
   currentUserId: string;
@@ -53,161 +23,64 @@ export const SocialDashboard: React.FC<SocialDashboardProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Mock data generation - replace with real API calls
+  // Initialize dashboard data service and subscribe to updates
   useEffect(() => {
-    loadRecentActivity();
-    loadMeetingInvites();
+    let unsubscribe: (() => void) | undefined;
+
+    const initializeData = async () => {
+      setIsLoading(true);
+      try {
+        // Initialize the data service
+        await dashboardDataService.initialize(currentUserId);
+        
+        // Subscribe to data updates
+        unsubscribe = dashboardDataService.subscribe((data: DashboardData) => {
+          setActivities(data.activities);
+          setMeetingInvites(data.meetingInvites);
+          setIsLoading(false);
+        });
+      } catch (error) {
+        console.error('Failed to initialize dashboard data:', error);
+        setIsLoading(false);
+      }
+    };
+
+    initializeData();
+
+    // Cleanup on unmount
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
   }, [currentUserId]);
 
-  const loadRecentActivity = async () => {
-    setIsLoading(true);
-    try {
-      // TODO: Replace with real API call
-      const mockActivities: ActivityItem[] = [
-        {
-          id: 'act-1',
-          type: 'message',
-          projectId: 'proj-1',
-          projectName: 'Downtown Office Complex',
-          sheetName: 'Floor Plan - Level 1',
-          title: 'Electrical outlet placement question',
-          description: '@john.smith Can you verify the outlet locations on the east wall? The specs seem inconsistent.',
-          authorName: 'Sarah Johnson',
-          authorAvatar: '👩‍💼',
-          timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
-          priority: 'medium',
-          status: 'open',
-          participants: ['john.smith', 'sarah.johnson'],
-          attachments: 1
-        },
-        {
-          id: 'act-2',
-          type: 'task',
-          projectId: 'proj-1',
-          projectName: 'Downtown Office Complex',
-          sheetName: 'HVAC Plan',
-          title: 'Review ductwork routing',
-          description: 'Task assigned: Review the proposed ductwork routing and provide feedback by EOD.',
-          authorName: 'Mike Chen',
-          authorAvatar: '👨‍🔧',
-          timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-          priority: 'high',
-          status: 'in-progress',
-          participants: [currentUserId, 'mike.chen']
-        },
-        {
-          id: 'act-3',
-          type: 'rfi',
-          projectId: 'proj-2',
-          projectName: 'Residential Development',
-          sheetName: 'Site Plan',
-          title: 'Storm drain clarification needed',
-          description: 'RFI created: Clarification needed on storm drain tie-in points. Drawing shows conflicting information.',
-          authorName: 'Lisa Williams',
-          authorAvatar: '👩‍🏗️',
-          timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-          priority: 'critical',
-          status: 'open',
-          participants: ['lisa.williams', 'city.inspector']
-        },
-        {
-          id: 'act-4',
-          type: 'meeting',
-          projectId: 'proj-1',
-          projectName: 'Downtown Office Complex',
-          title: 'Weekly coordination meeting',
-          description: 'Meeting completed: Discussed MEP coordination and upcoming milestones. Action items assigned.',
-          authorName: 'Project Manager',
-          timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-          participants: ['john.smith', 'sarah.johnson', 'mike.chen', currentUserId]
-        },
-        {
-          id: 'act-5',
-          type: 'comment',
-          projectId: 'proj-2',
-          projectName: 'Residential Development',
-          sheetName: 'Electrical Plan',
-          title: 'Load calculation review complete',
-          description: 'Reviewed the electrical load calculations. Everything looks good, approved for permit submission.',
-          authorName: 'David Rodriguez',
-          authorAvatar: '⚡',
-          timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-          status: 'resolved'
-        }
-      ];
+  // Get filtered activities using the data service
+  const filteredActivities = searchQuery 
+    ? dashboardDataService.searchActivities(searchQuery)
+    : dashboardDataService.filterActivities(selectedFilter, currentUserId);
 
-      setActivities(mockActivities);
-    } catch (error) {
-      console.error('Failed to load activity:', error);
-    } finally {
-      setIsLoading(false);
+  const handleActivityClick = (activity: ActivityItem) => {
+    // Mark activity as handled
+    dashboardDataService.markActivityHandled(activity.id);
+    
+    // Navigate based on activity type
+    if (activity.type === 'meeting' && onJoinMeeting) {
+      onJoinMeeting(activity.projectId);
+    } else if (onViewThread) {
+      onViewThread(activity.id);
     }
   };
 
-  const loadMeetingInvites = async () => {
-    try {
-      // TODO: Replace with real API call
-      const mockInvites: MeetingInvite[] = [
-        {
-          id: 'meeting-1',
-          title: 'MEP Coordination Review',
-          projectName: 'Downtown Office Complex',
-          scheduledTime: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
-          organizer: 'Sarah Johnson',
-          attendees: ['john.smith', 'mike.chen', currentUserId],
-          agenda: 'Review electrical and plumbing conflicts on levels 3-5',
-          meetingUrl: 'teambeam://meeting/abc123',
-          status: 'pending'
-        },
-        {
-          id: 'meeting-2',
-          title: 'Client Design Review',
-          projectName: 'Residential Development',
-          scheduledTime: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-          organizer: 'Lisa Williams',
-          attendees: ['client.rep', 'architect', currentUserId],
-          agenda: 'Present updated site plan and address client feedback',
-          meetingUrl: 'teambeam://meeting/def456',
-          status: 'pending'
-        }
-      ];
-
-      setMeetingInvites(mockInvites);
-    } catch (error) {
-      console.error('Failed to load meeting invites:', error);
+  const handleMeetingResponse = (inviteId: string, response: 'accepted' | 'declined') => {
+    dashboardDataService.respondToMeetingInvite(inviteId, response);
+    
+    if (response === 'accepted') {
+      const invite = meetingInvites.find(i => i.id === inviteId);
+      if (invite?.meetingUrl && onJoinMeeting) {
+        onJoinMeeting(invite.meetingUrl);
+      }
     }
-  };
-
-  const filteredActivities = activities.filter(activity => {
-    if (selectedFilter === 'mentions' && !activity.description.includes(`@${currentUserId}`)) {
-      return false;
-    }
-    if (selectedFilter === 'tasks' && activity.type !== 'task') {
-      return false;
-    }
-    if (selectedFilter === 'meetings' && activity.type !== 'meeting') {
-      return false;
-    }
-    if (searchQuery && !activity.title.toLowerCase().includes(searchQuery.toLowerCase()) && 
-        !activity.description.toLowerCase().includes(searchQuery.toLowerCase())) {
-      return false;
-    }
-    return true;
-  });
-
-  const formatTimeAgo = (timestamp: string) => {
-    const now = new Date();
-    const time = new Date(timestamp);
-    const diffMs = now.getTime() - time.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
-    return time.toLocaleDateString();
   };
 
   const getActivityIcon = (type: string) => {
@@ -232,21 +105,19 @@ export const SocialDashboard: React.FC<SocialDashboardProps> = ({
     }
   };
 
-  const handleMeetingResponse = async (meetingId: string, response: 'accept' | 'decline') => {
-    setMeetingInvites(prev => 
-      prev.map(invite => 
-        invite.id === meetingId 
-          ? { ...invite, status: response === 'accept' ? 'accepted' : 'declined' }
-          : invite
-      )
-    );
-    
-    if (response === 'accept') {
-      const meeting = meetingInvites.find(m => m.id === meetingId);
-      if (meeting?.meetingUrl) {
-        onJoinMeeting?.(meeting.meetingUrl);
-      }
-    }
+  const formatTimeAgo = (timestamp: string) => {
+    const now = new Date();
+    const time = new Date(timestamp);
+    const diffMs = now.getTime() - time.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return 'just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return time.toLocaleDateString();
   };
 
   const scheduleNewMeeting = () => {
@@ -306,13 +177,13 @@ export const SocialDashboard: React.FC<SocialDashboardProps> = ({
                     <div className="meeting-actions">
                       <button 
                         className="accept-btn"
-                        onClick={() => handleMeetingResponse(invite.id, 'accept')}
+                        onClick={() => handleMeetingResponse(invite.id, 'accepted')}
                       >
                         ✅ Accept
                       </button>
                       <button 
                         className="decline-btn"
-                        onClick={() => handleMeetingResponse(invite.id, 'decline')}
+                        onClick={() => handleMeetingResponse(invite.id, 'declined')}
                       >
                         ❌ Decline
                       </button>
