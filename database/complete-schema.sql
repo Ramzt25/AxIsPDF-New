@@ -1521,10 +1521,11 @@ INSERT INTO project_members (project_id, user_id, role) VALUES
 -- PERFORMANCE OPTIMIZATIONS
 -- ===================================================================
 
--- Vacuum and analyze
-VACUUM ANALYZE;
+-- Note: VACUUM cannot be run inside a transaction block
+-- Run these commands manually after schema deployment if needed:
+-- VACUUM ANALYZE;
 
--- Update table statistics
+-- Update table statistics (can be run in transaction)
 ANALYZE;
 
 -- ===================================================================

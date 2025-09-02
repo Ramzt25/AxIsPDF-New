@@ -17,6 +17,8 @@ The schema provides a comprehensive foundation for a construction management pla
 ## Files
 
 - `complete-schema.sql` - Full database schema with tables, indexes, RLS policies, triggers, and sample data
+- `migrations.sql` - Incremental migration script for schema updates
+- `maintenance.sql` - Database maintenance operations (VACUUM, ANALYZE, etc.)
 
 ## Database Structure
 
@@ -66,6 +68,8 @@ The schema provides a comprehensive foundation for a construction management pla
 1. Copy the contents of `complete-schema.sql`
 2. Paste into the Supabase SQL Editor
 3. Run the script to create all tables, policies, and initial data
+
+**Note**: If you encounter a VACUUM error (25001), this is normal. The schema creation will complete successfully, and you can run database maintenance operations separately using `maintenance.sql`.
 
 ### 3. Configure Storage
 
@@ -160,6 +164,9 @@ The schema is designed for future growth:
 2. **Cleanup**: Run `cleanup_expired_data()` function regularly
 3. **Monitoring**: Track query performance and storage usage
 4. **Updates**: Apply schema migrations as needed
+5. **Performance**: Run `maintenance.sql` weekly for optimal performance (VACUUM, ANALYZE)
+
+**Important**: Database maintenance operations in `maintenance.sql` must be run outside of transaction blocks. Use a direct database connection or psql client for these operations.
 
 ### Functions Available
 
