@@ -4,8 +4,18 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>AxIs – Progress Path Board</title>
-  <link rel="icon" type="image/svg+xml" href="./logo-variants/axis-favicon.svg"/>
-  <style>
+  <link rel="icon" type="image/svg+xml" href="./logo-variants/axis-favico        later: {
+        title: 'Later',
+        items: [
+          { id: 'teams-unfurl', title: 'Teams link unfurl + message extension', tags: ['Teams'], status: 'planned', milestone: 'v11' },
+          { id: 'teams-tab', title: 'Teams Tab + SSO', tags: ['Teams'], status: 'planned', milestone: 'v11' },
+          { id: 'excel-link', title: 'Quantity link / Excel sync', tags: ['Export'], status: 'planned', milestone: 'v11' },
+          { id: 'auto-cal', title: 'AI auto-calibrate from title block/scale bar', tags: ['AI'], status: 'planned', milestone: 'v11' },
+          { id: 'adv-annot', title: 'Advanced annotations (callouts, notes, shapes)', tags: ['PDF Engine'], status: 'planned', milestone: 'v11' },
+          { id: 'openai-integration', title: 'OpenAI API integration for AI tool generation', tags: ['AI'], status: 'planned', milestone: 'v11' },
+          { id: 'local-storage', title: 'Local file storage system with folder tree + cloud sync', tags: ['Storage'], status: 'planned', milestone: 'v11' },
+        ]
+      } <style>
     :root {
       --bg: #0c0a09;
       --surface: #0a1a2f;
@@ -240,6 +250,8 @@
           { id: 'rfi-rework', title: 'RFI flow: PDF gen + Supabase + email', tags: ['RFI'], status: 'progress', milestone: 'mvp' },
           { id: 'teams-webhook', title: 'Teams webhook + Adaptive Card for RFI', tags: ['Teams'], status: 'planned', milestone: 'mvp', deps: ['rfi-rework'] },
           { id: 'markups-list', title: 'Markups List + CSV/PDF export', tags: ['PDF Engine'], status: 'planned', milestone: 'mvp', deps: ['vw-core'] },
+          { id: 'placeholder-cleanup', title: 'Placeholder/Stub/Mock elimination (PH-016, PH-017 done)', tags: ['Code Quality'], status: 'progress', milestone: 'mvp' },
+          { id: 'toolbox-service', title: 'Toolbox service integration + SVG parameter detection', tags: ['Toolbox'], status: 'done', milestone: 'mvp' },
         ]
       },
       next: {

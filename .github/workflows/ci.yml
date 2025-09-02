@@ -1,0 +1,54 @@
+name: CI - Code Quality & Placeholder Check
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  quality-check:
+    runs-on: ubuntu-latest
+    name: Code Quality & Placeholder Enforcement
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run TypeScript type checking
+      run: npm run typecheck
+      
+    - name: Run ESLint
+      run: npm run lint
+      
+    - name: Check for production placeholders
+      run: npm run placeholder-check
+      continue-on-error: false
+      
+    - name: Run unit tests
+      run: npm run test:unit
+      
+    - name: Generate placeholder report
+      if: failure()
+      run: |
+        npm run placeholder-scan
+        echo "📊 Placeholder scan complete. Check docs/placeholders.md for details."
+        
+    - name: Upload placeholder report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: placeholder-report
+        path: |
+          docs/placeholders.md
+          docs/placeholders.json
+        retention-days: 7

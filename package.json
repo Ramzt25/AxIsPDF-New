@@ -25,7 +25,10 @@
     "test:perf": "node ./tools/perf-suite.js",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
     "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
-    "typecheck": "tsc --noEmit --composite false"
+    "typecheck": "tsc --noEmit --composite false",
+    "placeholder-scan": "node tools/scan-placeholders.cjs",
+    "placeholder-check": "node tools/scan-placeholders.cjs --check",
+    "precommit": "npm run placeholder-check && npm run lint && npm run typecheck"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",
