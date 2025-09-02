@@ -27,75 +27,9 @@ export const ToolboxPalette: React.FC<ToolboxPaletteProps> = ({
   }, []);
 
   const loadDefaultTools = () => {
-    // TODO[PH-016]: Load tools from active toolbox packs
-    // For now, create some sample tools to demonstrate the UI
-    const sampleTools: Tool[] = [
-      {
-        id: 'tool-receptacle-duplex',
-        name: 'Receptacle - Duplex',
-        version: 1,
-        type: 'symbol',
-        svg: 'svg/receptacle.svg',
-        params: {
-          rotation: { type: 'angle', default: 0, min: 0, max: 359 },
-          label: { type: 'string', default: 'R' },
-          circuit: { type: 'string', default: '' }
-        },
-        data: {
-          discipline: 'Electrical',
-          category: 'Devices'
-        }
-      },
-      {
-        id: 'tool-light-fixture',
-        name: 'Light Fixture',
-        version: 1,
-        type: 'symbol',
-        svg: 'svg/light.svg',
-        params: {
-          rotation: { type: 'angle', default: 0 },
-          label: { type: 'string', default: 'L' },
-          wattage: { type: 'number', default: 100, min: 10, max: 1000 }
-        },
-        data: {
-          discipline: 'Electrical',
-          category: 'Lighting'
-        }
-      },
-      {
-        id: 'stamp-approved',
-        name: 'Approved Stamp',
-        version: 1,
-        type: 'stamp',
-        svg: 'svg/approved.svg',
-        params: {
-          approvedBy: { type: 'string', default: '' },
-          date: { type: 'date', default: '$today' },
-          project: { type: 'string', default: '$project.name' }
-        },
-        data: {
-          discipline: 'Admin',
-          category: 'Stamps'
-        }
-      },
-      {
-        id: 'callout-standard',
-        name: 'Standard Callout',
-        version: 1,
-        type: 'callout',
-        svg: 'svg/callout.svg',
-        params: {
-          text: { type: 'string', default: 'Note' },
-          leader: { type: 'polyline', default: [] }
-        },
-        data: {
-          discipline: 'General',
-          category: 'Annotations'
-        }
-      }
-    ];
-
-    setTools(sampleTools);
+    // Load tools from the toolbox service - either from loaded packs or default tools
+    const loadedTools = toolboxService.getDefaultTools();
+    setTools(loadedTools);
   };
 
   const filteredTools = tools.filter(tool => {

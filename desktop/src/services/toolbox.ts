@@ -316,6 +316,98 @@ export class ToolboxService {
   }
 
   // Search and filtering
+  // Get all loaded tools across all packs
+  getAllTools(packIds?: string[]): Tool[] {
+    const tools: Tool[] = [];
+    
+    for (const [packId, pack] of this.loadedPacks.entries()) {
+      if (packIds && !packIds.includes(packId)) continue;
+      
+      for (const tool of Object.values(pack.tools)) {
+        tools.push(tool);
+      }
+    }
+    
+    return tools;
+  }
+
+  // Get the default toolpack if no packs are loaded
+  getDefaultTools(): Tool[] {
+    // If we have loaded packs, return tools from them
+    if (this.loadedPacks.size > 0) {
+      return this.getAllTools();
+    }
+
+    // Otherwise return built-in default tools for basic functionality
+    const defaultTools: Tool[] = [
+      {
+        id: 'tool-receptacle-duplex',
+        name: 'Receptacle - Duplex',
+        version: 1,
+        type: 'symbol',
+        svg: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+CjxyZWN0IHg9IjQiIHk9IjgiIHdpZHRoPSIxNiIgaGVpZ2h0PSI4IiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIi8+CjxjaXJjbGUgY3g9IjEwIiBjeT0iMTIiIHI9IjEiIGZpbGw9ImN1cnJlbnRDb2xvciIvPgo8Y2lyY2xlIGN4PSIxNCIgY3k9IjEyIiByPSIxIiBmaWxsPSJjdXJyZW50Q29sb3IiLz4KPC9zdmc+',
+        params: {
+          rotation: { type: 'angle', default: 0, min: 0, max: 359 },
+          label: { type: 'string', default: 'R' },
+          circuit: { type: 'string', default: '' }
+        },
+        data: {
+          discipline: 'Electrical',
+          category: 'Devices'
+        }
+      },
+      {
+        id: 'tool-light-fixture',
+        name: 'Light Fixture',
+        version: 1,
+        type: 'symbol',
+        svg: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+CjxjaXJjbGUgY3g9IjEyIiBjeT0iMTIiIHI9IjgiIHN0cm9rZT0iY3VycmVudENvbG9yIiBzdHJva2Utd2lkdGg9IjIiLz4KPGV4dCB4PSIxMiIgeT0iMTYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iMTAiIGZpbGw9ImN1cnJlbnRDb2xvciI+TDwvdGV4dD4KPC9zdmc+',
+        params: {
+          rotation: { type: 'angle', default: 0 },
+          label: { type: 'string', default: 'L' },
+          wattage: { type: 'number', default: 100, min: 10, max: 1000 }
+        },
+        data: {
+          discipline: 'Electrical',
+          category: 'Lighting'
+        }
+      },
+      {
+        id: 'stamp-approved',
+        name: 'Approved Stamp',
+        version: 1,
+        type: 'stamp',
+        svg: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCA2NCAzMiIgZmlsbD0ibm9uZSI+CjxyZWN0IHg9IjIiIHk9IjIiIHdpZHRoPSI2MCIgaGVpZ2h0PSIyOCIgc3Ryb2tlPSJyZWQiIHN0cm9rZS13aWR0aD0iMiIgZmlsbD0ibm9uZSIvPgo8dGV4dCB4PSIzMiIgeT0iMjAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9InJlZCIgZm9udC13ZWlnaHQ9ImJvbGQiPkFQUFJPVkVEPC90ZXh0Pgo8L3N2Zz4=',
+        params: {
+          approvedBy: { type: 'string', default: '' },
+          date: { type: 'date', default: '$today' },
+          project: { type: 'string', default: '$project.name' }
+        },
+        data: {
+          discipline: 'Admin',
+          category: 'Stamps'
+        }
+      },
+      {
+        id: 'callout-standard',
+        name: 'Standard Callout',
+        version: 1,
+        type: 'callout',
+        svg: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA4MCA0MCIgZmlsbD0ibm9uZSI+CjxyZWN0IHg9IjIiIHk9IjIiIHdpZHRoPSI3NiIgaGVpZ2h0PSIzNiIgc3Ryb2tlPSJjdXJyZW50Q29sb3IiIHN0cm9rZS13aWR0aD0iMiIgZmlsbD0id2hpdGUiLz4KPHR4dCB4PSI0MCIgeT0iMjQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iMTIiIGZpbGw9ImN1cnJlbnRDb2xvciI+Tm90ZTwvdGV4dD4KPC9zdmc+',
+        params: {
+          text: { type: 'string', default: 'Note' },
+          leader: { type: 'polyline', default: [] }
+        },
+        data: {
+          discipline: 'General',
+          category: 'Annotations'
+        }
+      }
+    ];
+
+    return defaultTools;
+  }
+
   searchTools(query: string, loadedPackIds?: string[]): Tool[] {
     const results: Tool[] = [];
     const searchTerm = query.toLowerCase();
