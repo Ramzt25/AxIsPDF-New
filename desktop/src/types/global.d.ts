@@ -14,6 +14,8 @@ interface AxIsAPI {
   exportProject: (format: string) => Promise<void>;
   showSaveDialog: (options: any) => Promise<string | undefined>;
   showOpenDialog: (options: any) => Promise<string[] | undefined>;
+  readFile: (path: string) => Promise<ArrayBuffer>;
+  writeFile: (path: string, data: ArrayBuffer | Uint8Array) => Promise<void>;
   platform: string;
   version: string;
 }

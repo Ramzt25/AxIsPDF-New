@@ -1,7 +1,15 @@
 import { useState, useMemo, createContext, useContext } from "react";
 
 // Theme Context
-const ThemeContext = createContext();
+const ThemeContext = createContext<{
+  theme: 'light' | 'dark';
+  setTheme: (theme: 'light' | 'dark') => void;
+  isDark: boolean;
+}>({
+  theme: 'light',
+  setTheme: () => {},
+  isDark: false,
+});
 
 export const useTheme = () => {
   const context = useContext(ThemeContext);
@@ -11,12 +19,17 @@ export const useTheme = () => {
   return context;
 };
 
-export function ThemeProvider({ children }) {
-  const [theme, setTheme] = useState("dark");
+export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const [theme, setThemeState] = useState<'light' | 'dark'>("dark");
+  
+  const setTheme = (newTheme: 'light' | 'dark') => {
+    setThemeState(newTheme);
+    document.documentElement.classList.toggle('dark', newTheme === 'dark');
+  };
   
   const value = useMemo(() => ({
     theme,
-    setTheme: (newTheme) => setTheme(newTheme),
+    setTheme,
     isDark: theme === "dark"
   }), [theme]);
 
@@ -610,7 +623,12 @@ function Thumb({ label }) {
   );
 }
 
-function Message({ from, text, mine, ai }) {
+function Message({ from, text, mine = false, ai = false }: { 
+  from: string; 
+  text: string; 
+  mine?: boolean; 
+  ai?: boolean; 
+}) {
   const bubble = mine
     ? "bg-blue-600 text-white ml-auto"
     : ai

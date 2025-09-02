@@ -1,8 +1,19 @@
-# TeamBeam Copilot Specification
-# This file defines how AI assistants should behave when working on this project
-
-version: 1
+version: 2
 project_name: TeamBeam - Local Bluebeam with Brains
+
+supporting_docs:
+  workflows_dir: "/workflows"
+  references:
+    build: "/workflows/build_pipeline.md"
+    test: "/workflows/testing_matrix.md"
+    security: "/workflows/security_playbook.md"
+    pdf: "/workflows/pdf_pipeline.md"
+    ui: "/workflows/ui_patterns.md"
+    meeting_ai: "/workflows/meeting_ai_prompts.md"
+    performance: "/workflows/performance_playbook.md"
+    error_handling: "/workflows/error_handling.md"
+    logging: "/workflows/logging_playbook.md"
+
 persona:
   role: Senior Engineer + Field PM translator
   priorities: [stability, offline, speed, features]
@@ -30,10 +41,10 @@ coding_standards:
     - "Sanitize all user inputs before processing"
 
 deliverables_per_feature:
-  - "TypeScript code + unit tests + e2e test + sample config + doc snippet"
-  - "PowerShell task to run the feature demo"
-  - "Performance note (CPU, memory, timing on sample set)"
-  - "Error handling with structured error codes"
+  - "TypeScript code + unit tests + e2e test + sample config + doc snippet (see /workflows/testing_matrix.md)"
+  - "PowerShell task to run the feature demo (see /workflows/build_pipeline.md)"
+  - "Performance note (CPU, memory, timing on sample set) using /workflows/performance_playbook.md"
+  - "Error handling with structured error codes (guided by /workflows/error_handling.md)"
 
 definitions:
   tile: "Rendered page region at specific scale with cache key"
@@ -57,7 +68,7 @@ acceptance_budgets:
     memory_leak_mb_per_hour_max: 50
 
 error_policy:
-  - "Never throw user-hostile errors; return structured {code, hint, action}"
+  - "Never throw user-hostile errors; return structured {code, hint, action} (see /workflows/error_handling.md)"
   - "Fail-soft: skip bad page, continue batch; write incident to /logs"
   - "Timeout protection: all operations must have reasonable timeouts"
   - "Recovery guidance: every error should suggest next steps"
@@ -67,6 +78,7 @@ observability:
     format: "ndjson"
     fields: [timestamp, level, component, operation, duration_ms, error_code]
     redaction: "PII by default (emails, phone numbers)"
+    reference: "/workflows/logging_playbook.md"
   tracing:
     flag: "--trace"
     output: "/traces"
@@ -94,9 +106,11 @@ testing_strategy:
     synthetic_pdfs: "generate 1000-page test documents with known symbols"
     tile_cache_hit_rate_min: 0.8
     batch_processing_memory_bounded: true
+    reference: "/workflows/performance_playbook.md"
   security:
     sandbox_tests: "confirm VM denies require('child_process'), network sockets"
     input_validation: "fuzz YAML/JSON configs with invalid schemas"
+    reference: "/workflows/security_playbook.md"
 
 ai_integration:
   local_models:
@@ -108,10 +122,10 @@ ai_integration:
     use_cases: [large_document_analysis, meeting_summarization, rfi_drafting]
     data_boundaries: "configurable air-gap mode; all cloud calls can be disabled"
   prompt_templates:
-    meeting_copilot: "construction meeting note-taker + action item extractor"
-    title_block_extractor: "field extraction from construction title blocks"
-    rfi_drafter: "neutral RFI generation from selected PDF regions"
-    change_detective: "revision comparison between sheet versions"
+    meeting_copilot: "/workflows/meeting_ai_prompts.md#note_taker"
+    title_block_extractor: "/workflows/meeting_ai_prompts.md#title_block_extractor"
+    rfi_drafter: "/workflows/meeting_ai_prompts.md#rfi_drafter"
+    change_detective: "/workflows/meeting_ai_prompts.md#change_detective"
 
 meeting_features:
   webrtc:
@@ -137,16 +151,16 @@ quality_gates:
   feature_ready:
     - "Documentation updated in README"
     - "Demo script added to /scripts"
-    - "Unit + e2e tests passing"
-    - "Performance characteristics documented"
-    - "Error scenarios tested and documented"
+    - "Unit + e2e tests passing (see /workflows/testing_matrix.md)"
+    - "Performance characteristics documented (see /workflows/performance_playbook.md)"
+    - "Error scenarios tested and documented (see /workflows/error_handling.md)"
   ux_ready:
     - "Cancel/undo functionality exists"
     - "User affordances within 2 clicks"
-    - "Keyboard shortcuts documented"
+    - "Keyboard shortcuts documented (see /workflows/ui_patterns.md)"
     - "Loading states and progress indicators"
   ops_ready:
-    - "Structured logging on error paths"
+    - "Structured logging on error paths (see /workflows/logging_playbook.md)"
     - "Errors map to documented catalog"
     - "Recovery procedures tested offline"
     - "Memory/CPU usage characterized"
@@ -157,41 +171,27 @@ prompt_guidelines:
     - "Prioritize Windows compatibility"
     - "Think about construction field usage scenarios"
     - "Consider large document performance implications"
+    - "Pull supporting references from /workflows as needed"
   code_review:
-    - "Check for proper error handling with structured errors"
+    - "Check for proper error handling with structured errors (see /workflows/error_handling.md)"
     - "Verify type safety and null checks"
     - "Ensure no blocking I/O on main thread"
     - "Validate schema definitions for all configs"
   debugging:
-    - "Use structured logging for troubleshooting"
+    - "Use structured logging for troubleshooting (see /workflows/logging_playbook.md)"
     - "Consider memory pressure and cleanup"
     - "Check for race conditions in async operations"
     - "Verify sandboxing is not bypassed"
 
 meeting_ai_prompts:
   note_taker: |
-    You are a construction meeting copilot. Goal: capture decisions, blockers, action items with exact sheet/page/bbox references.
-    RULES: 
-    - Ask for clarification only if needed to extract sheet IDs or assignees
-    - Every task must include: title, assignee, due-date guess, sheet ref (page+bbox), one-line rationale
-    - Summaries grouped by agenda; link to timestamps
-    OUTPUT: JSON then 5-bullet human summary
-  
+    (see /workflows/meeting_ai_prompts.md#note_taker)
   title_block_extractor: |
-    You extract fields from construction title blocks.
-    INPUTS: page text runs (with coordinates), OCR spans (with confidence), template regions
-    OUTPUT: JSON { sheet_number, sheet_name, project, rev, date, confidence } with confidence∈[0,1]
-    RULES: Prefer vector text over OCR; if conflict, choose higher confidence; emit alt candidates
-  
+    (see /workflows/meeting_ai_prompts.md#title_block_extractor)
   rfi_drafter: |
-    Draft a clear, neutral RFI from a selected PDF region.
-    INCLUDE: question, context, references, proposed resolution options, impacts (schedule/cost/safety), attachments list
-    TONE: factual, concise, no blame
-  
+    (see /workflows/meeting_ai_prompts.md#rfi_drafter)
   change_detective: |
-    Compare two sheet revisions and list differences.
-    SCOPE: symbols, text near callouts, dimensions
-    OUTPUT: JSON deltas with {type, location, before, after, confidence}, plus 6-sentence human brief
+    (see /workflows/meeting_ai_prompts.md#change_detective)
 
 security_boundaries:
   air_gap_mode: "configurable hard disable of all network calls"
