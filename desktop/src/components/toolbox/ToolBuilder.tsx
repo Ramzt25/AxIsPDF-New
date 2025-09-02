@@ -86,37 +86,151 @@ export const ToolBuilder: React.FC<ToolBuilderProps> = ({
   }, []);
 
   const autoDetectParameters = (svg: string) => {
-    // TODO[PH-017]: Analyze SVG for text elements, groups, and other parametric opportunities
+    // Real SVG analysis for detecting text elements, groups, and other parametric opportunities
     const detectedParams: ParameterDraft[] = [];
     
-    // Look for text elements that could be parameters
-    const textMatches = svg.match(/<text[^>]*>(.*?)<\/text>/gi);
-    if (textMatches) {
-      textMatches.forEach((match, index) => {
-        const content = match.replace(/<[^>]*>/g, '').trim();
-        if (content && content.length < 20) {
-          detectedParams.push({
-            id: `text_${index}`,
-            type: 'string',
-            default: content,
-            label: `Text ${index + 1}`,
-            description: `Text element: "${content}"`
-          });
+    try {
+      // Parse SVG content for analysis
+      const parser = new DOMParser();
+      const svgDoc = parser.parseFromString(svg, 'image/svg+xml');
+      
+      // Check for parsing errors
+      if (svgDoc.querySelector('parsererror')) {
+        console.warn('SVG parsing error during parameter detection');
+        return;
+      }
+
+      const svgElement = svgDoc.documentElement;
+
+      // 1. Detect text elements that could be parameters
+      const textElements = svgElement.querySelectorAll('text, tspan');
+      textElements.forEach((textEl, index) => {
+        const content = textEl.textContent?.trim();
+        if (content && content.length > 0 && content.length < 50) {
+          // Skip common non-parametric text
+          if (!['svg', 'path', 'rect', 'circle', 'line', 'g'].includes(content.toLowerCase())) {
+            detectedParams.push({
+              id: `text_${index + 1}`,
+              type: 'string',
+              default: content,
+              label: `Text ${index + 1}`,
+              description: `Text element: "${content}"`
+            });
+          }
         }
       });
-    }
 
-    // Look for groups that might represent rotatable elements
-    if (svg.includes('<g ') || svg.includes('<group')) {
-      detectedParams.push({
-        id: 'rotation',
-        type: 'angle',
-        default: 0,
-        min: 0,
-        max: 359,
-        label: 'Rotation',
-        description: 'Rotation angle in degrees'
+      // 2. Detect groups that might represent rotatable elements
+      const groups = svgElement.querySelectorAll('g[transform], g[id]');
+      if (groups.length > 0) {
+        // Only add rotation if we don't already have one and there are meaningful groups
+        const hasRotation = detectedParams.some(p => p.id === 'rotation');
+        if (!hasRotation) {
+          detectedParams.push({
+            id: 'rotation',
+            type: 'angle',
+            default: 0,
+            min: 0,
+            max: 359,
+            label: 'Rotation',
+            description: 'Rotation angle for the entire symbol'
+          });
+        }
+      }
+
+      // 3. Detect color-parameterizable elements (fill, stroke)
+      const colorElements = svgElement.querySelectorAll('[fill]:not([fill="none"]), [stroke]:not([stroke="none"])');
+      if (colorElements.length > 0) {
+        const uniqueColors = new Set<string>();
+        colorElements.forEach(el => {
+          const fill = el.getAttribute('fill');
+          const stroke = el.getAttribute('stroke');
+          if (fill && fill !== 'none' && fill !== 'currentColor') uniqueColors.add(fill);
+          if (stroke && stroke !== 'none' && stroke !== 'currentColor') uniqueColors.add(stroke);
+        });
+
+        if (uniqueColors.size > 0) {
+          detectedParams.push({
+            id: 'color',
+            type: 'string',
+            default: Array.from(uniqueColors)[0] || '#000000',
+            label: 'Color',
+            description: 'Primary color for the symbol'
+          });
+        }
+      }
+
+      // 4. Detect size-parameterizable elements
+      const sizedElements = svgElement.querySelectorAll('rect[width], rect[height], circle[r], ellipse[rx], ellipse[ry]');
+      if (sizedElements.length > 0) {
+        // Check if we have rectangles that could be scaled
+        const rects = svgElement.querySelectorAll('rect[width][height]');
+        if (rects.length > 0) {
+          detectedParams.push({
+            id: 'scale',
+            type: 'number',
+            default: 1.0,
+            min: 0.1,
+            max: 5.0,
+            label: 'Scale',
+            description: 'Scale factor for the symbol size'
+          });
+        }
+      }
+
+      // 5. Detect numeric values in attributes that could be parameters
+      const allElements = svgElement.querySelectorAll('*');
+      const numericPattern = /(\d+(?:\.\d+)?)/g;
+      const potentialNumericParams: { value: string; count: number }[] = [];
+      
+      allElements.forEach(el => {
+        ['width', 'height', 'r', 'rx', 'ry', 'x', 'y', 'cx', 'cy'].forEach(attr => {
+          const value = el.getAttribute(attr);
+          if (value) {
+            const matches = value.match(numericPattern);
+            if (matches && matches.length === 1) {
+              const numValue = matches[0];
+              const existing = potentialNumericParams.find(p => p.value === numValue);
+              if (existing) {
+                existing.count++;
+              } else {
+                potentialNumericParams.push({ value: numValue, count: 1 });
+              }
+            }
+          }
+        });
       });
+
+      // Add commonly used numeric values as potential parameters
+      potentialNumericParams
+        .filter(p => p.count >= 2 && parseFloat(p.value) > 1) // Repeated values that aren't tiny
+        .slice(0, 2) // Limit to avoid too many auto-detected params
+        .forEach((param, index) => {
+          detectedParams.push({
+            id: `size_${index + 1}`,
+            type: 'number',
+            default: parseFloat(param.value),
+            min: 1,
+            label: `Size ${index + 1}`,
+            description: `Repeated dimension value: ${param.value}`
+          });
+        });
+
+      // 6. Detect if this looks like a stamp (has text + border)
+      const hasText = textElements.length > 0;
+      const hasBorder = svgElement.querySelectorAll('rect[stroke], circle[stroke], path[stroke]').length > 0;
+      if (hasText && hasBorder && !detectedParams.some(p => p.id === 'date')) {
+        detectedParams.push({
+          id: 'date',
+          type: 'date',
+          default: '$today',
+          label: 'Date',
+          description: 'Date stamp'
+        });
+      }
+
+    } catch (error) {
+      console.warn('Error during SVG parameter detection:', error);
     }
 
     setParameters(prev => [...prev, ...detectedParams]);
