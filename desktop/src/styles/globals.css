@@ -1,0 +1,236 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Global styles for seamless full-height layout */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Custom scrollbar styles for dark theme */
+@layer base {
+  /* Dark theme scrollbars */
+  .dark ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  .dark ::-webkit-scrollbar-track {
+    @apply bg-zinc-900;
+  }
+  
+  .dark ::-webkit-scrollbar-thumb {
+    @apply bg-zinc-700 rounded-full;
+  }
+  
+  .dark ::-webkit-scrollbar-thumb:hover {
+    @apply bg-zinc-600;
+  }
+
+  /* Light theme scrollbars */
+  .light ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  .light ::-webkit-scrollbar-track {
+    @apply bg-gray-100;
+  }
+  
+  .light ::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 rounded-full;
+  }
+  
+  .light ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-400;
+  }
+
+  /* Focus outline improvements */
+  *:focus-visible {
+    @apply outline-2 outline-offset-2 outline-blue-500;
+  }
+
+  /* Selection colors */
+  ::selection {
+    @apply bg-blue-500/20;
+  }
+}
+
+/* Component layer for reusable patterns */
+@layer components {
+  /* Glass morphism effect for floating panels */
+  .glass {
+    @apply bg-white/10 backdrop-blur-md border border-white/20;
+  }
+  
+  .glass.dark {
+    @apply bg-black/20 border-white/10;
+  }
+
+  /* Professional button variants */
+  .btn-primary {
+    @apply px-4 py-2 rounded-lg bg-orange-500 text-white font-medium hover:bg-orange-400 focus:bg-orange-600 transition-all duration-150 shadow-sm;
+  }
+
+  .btn-secondary {
+    @apply px-4 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-500 focus:bg-blue-700 transition-all duration-150 shadow-sm;
+  }
+
+  .btn-ghost {
+    @apply px-3 py-2 rounded-lg border border-zinc-700 bg-zinc-800/60 hover:bg-zinc-700 focus:bg-zinc-600 transition-all duration-150;
+  }
+
+  .btn-ghost.light {
+    @apply border-gray-300 bg-gray-50 hover:bg-gray-100 focus:bg-gray-200;
+  }
+
+  /* Card components */
+  .card {
+    @apply bg-zinc-900 border border-zinc-800 rounded-2xl p-4;
+  }
+
+  .card.light {
+    @apply bg-white border-gray-200;
+  }
+
+  /* Input styling */
+  .input {
+    @apply bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 transition-colors;
+  }
+
+  .input.light {
+    @apply bg-white border-gray-300 focus:border-blue-500;
+  }
+
+  /* Professional panel layouts */
+  .panel {
+    @apply bg-zinc-900 border-r border-zinc-800;
+  }
+
+  .panel.light {
+    @apply bg-white border-gray-200;
+  }
+
+  /* Smooth transitions for theme switching */
+  .theme-transition {
+    @apply transition-colors duration-200 ease-in-out;
+  }
+
+  /* Status indicators */
+  .status-online {
+    @apply w-2.5 h-2.5 rounded-full bg-emerald-500;
+  }
+
+  .status-idle {
+    @apply w-2.5 h-2.5 rounded-full bg-amber-500;
+  }
+
+  .status-offline {
+    @apply w-2.5 h-2.5 rounded-full bg-zinc-600;
+  }
+
+  /* Floating action styles */
+  .floating-panel {
+    @apply fixed z-50 bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl;
+  }
+
+  .floating-panel.light {
+    @apply bg-white border-gray-200;
+  }
+
+  /* Professional typography scales */
+  .text-heading-1 {
+    @apply text-3xl font-bold tracking-tight;
+  }
+
+  .text-heading-2 {
+    @apply text-2xl font-semibold tracking-tight;
+  }
+
+  .text-heading-3 {
+    @apply text-xl font-semibold;
+  }
+
+  .text-body {
+    @apply text-base leading-relaxed;
+  }
+
+  .text-small {
+    @apply text-sm leading-normal;
+  }
+
+  .text-tiny {
+    @apply text-xs leading-tight;
+  }
+}
+
+/* Utility layer for specific overrides */
+@layer utilities {
+  /* Hide scrollbars while keeping functionality */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Smooth scrolling */
+  .scroll-smooth {
+    scroll-behavior: smooth;
+  }
+
+  /* Professional shadows */
+  .shadow-professional {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+
+  .shadow-professional-lg {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Truncate text with ellipsis */
+  .text-truncate {
+    @apply truncate;
+  }
+
+  /* Glassmorphism utilities */
+  .backdrop-glass {
+    backdrop-filter: blur(12px) saturate(180%);
+  }
+
+  /* Professional hover states */
+  .hover-lift {
+    @apply transform hover:scale-105 transition-transform duration-150;
+  }
+
+  .hover-fade {
+    @apply opacity-80 hover:opacity-100 transition-opacity duration-150;
+  }
+
+  /* Layout utilities */
+  .safe-area-inset {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  /* Animation utilities */
+  .animate-enter {
+    animation: fadeIn 150ms ease-out;
+  }
+
+  .animate-exit {
+    animation: fadeOut 150ms ease-in;
+  }
+
+  .animate-slide-enter {
+    animation: slideIn 200ms ease-out;
+  }
+
+  .animate-slide-exit {
+    animation: slideOut 200ms ease-in;
+  }
+}
