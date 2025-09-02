@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>AxIs – Roadmap Pro</title>
+  <link rel="icon" type="image/svg+xml" href="./logo-variants/axis-favicon.svg"/>
+  <style>
+    :root {
+      --bg: #0c0a09;
+      --surface: #0a1a2f;
+      --surface-2: #0e1623;
+      --panel: #0f172a;
+      --panel-2: #0b1220;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --primary: #f97316;
+      --success: #22c55e;
+      --warning: #eab308;
+      --danger: #ef4444;
+      --border: #1f2937;
+      --radius: 14px;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0; background: radial-gradient(1200px 600px at 20% 20%, var(--panel-2), var(--bg));
+      color: var(--text);
+      font-family: ui-sans-serif, -apple-system, Segoe UI, Roboto, Inter, system-ui, Arial;
+    }
+    a { color: var(--primary); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .topbar {
+      position: sticky; top: 0; z-index: 30;
+      display:flex; align-items:center; gap:12px;
+      padding:10px 16px; border-bottom:1px solid var(--border);
+      background: linear-gradient(180deg, rgba(0,0,0,.6), rgba(0,0,0,0)); backdrop-filter: blur(8px);
+    }
+    .logo { display:flex; align-items:center; gap:10px; }
+    .logo img { width: 32px; height: 32px; border-radius: 8px; }
+    .logo span { font-weight: 900; letter-spacing: .6px; }
+    .tabs { display:flex; gap:8px; margin-left: 6px; }
+    .tab { display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius: 999px;
+           border:1px solid var(--border); background: var(--surface); cursor: pointer; user-select:none; }
+    .tab.active { outline:2px solid var(--primary); outline-offset: 2px; }
+    .toolbar { margin-left:auto; display:flex; align-items:center; gap:8px; }
+    .btn {
+      display:inline-flex; align-items:center; gap:8px;
+      background: var(--primary); color:#0a1a2f; border:none; border-radius: 10px;
+      padding:8px 12px; cursor:pointer; font-weight:800;
+    }
+    .ghost { background: var(--panel); color: var(--text); border: 1px solid var(--border); }
+    .toggle { display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius: 10px;
+              border: 1px solid var(--border); background: var(--surface); cursor:pointer; }
+    .wrap { padding: 14px; display: grid; gap: 16px; }
+
+    /* Shared containers */
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px;
+      box-shadow: var(--shadow);
+    }
+    .pill { font-size: 11px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); background: var(--panel-2); color: var(--muted); }
+    .pill.done { border-color: var(--success); color: #bbf7d0; }
+    .pill.progress { border-color: var(--warning); color: #fde68a; }
+    .pill.blocked { border-color: var(--danger); color: #fecaca; }
+
+    /* Flow diagram */
+    .flow { background: var(--surface); border:1px solid var(--border); border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow); }
+    .stage-title { font-weight: 900; margin-bottom: 10px; letter-spacing: .5px; }
+    .flow-inner { position: relative; overflow-x: auto; padding-bottom: 12px; }
+    .lane { display: flex; align-items: stretch; gap: 28px; padding: 8px 6px 18px 6px; min-width: 1200px; }
+    .node { position: relative; min-width: 220px; display:grid; gap:6px; background: var(--panel); border:1px solid var(--border); padding:12px; border-radius: 12px; }
+    .node .title { font-weight: 800; }
+    .node .desc { color: var(--muted); font-size: 13px; }
+    .badge { position:absolute; top:-10px; right:-10px; font-size:11px; font-weight: 800; padding:4px 8px; border-radius: 999px; border:1px solid rgba(0,0,0,.35); }
+    .badge.done { background: var(--success); color:#07130a; }
+    .badge.progress { background: var(--warning); color:#1f1702; }
+    .badge.planned { background: var(--muted); color:#0a1a2f; }
+    .arrow { position: relative; width: 32px; display:grid; place-items:center; color: var(--muted); }
+    .arrow::after { content: "➔"; font-size: 18px; }
+
+    /* Kanban board */
+    .board { display:grid; grid-template-columns: repeat(3, 1fr); gap:16px; }
+    .col { background: var(--surface); border:1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow:hidden; display:grid; grid-template-rows:auto 1fr; }
+    .col header { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:10px 12px; border-bottom:1px solid var(--border); background: linear-gradient(180deg, var(--surface-2), transparent); }
+    .col header .h { font-weight: 900; letter-spacing: .4px; }
+    .col .cards { padding: 10px; display:grid; gap: 10px; align-content:start; }
+    .col .card { cursor: pointer; }
+    .col .card:hover { border-color: var(--primary); }
+    .meta { display:flex; align-items:center; gap:8px; color: var(--muted); font-size: 12px; }
+    .title { font-weight: 800; }
+
+    /* Swimlanes */
+    .swim-wrap { display:grid; gap: 12px; }
+    .lane-row { background: var(--surface); border:1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow:hidden; }
+    .lane-header { display:flex; align-items:center; gap:8px; padding:10px 12px; border-bottom:1px solid var(--border); background: linear-gradient(180deg, var(--surface-2), transparent); }
+    .lane-title { font-weight: 900; }
+    .lane-cards { display:flex; gap: 10px; padding: 10px; overflow-x: auto; }
+    .dim { opacity: .4; }
+
+    /* Milestones */
+    .milestones { background: var(--surface); border:1px solid var(--border); border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow); display:grid; gap: 12px; }
+    .bar { height: 10px; background: #0d2238; border: 1px solid var(--border); border-radius: 999px; overflow: hidden; }
+    .bar > div { height: 100%; background: linear-gradient(90deg, var(--primary), #fbbf24); width: 0%; transition: width .4s ease; }
+    .legend { display:flex; gap: 10px; flex-wrap: wrap; color: var(--muted); font-size: 13px; }
+
+    /* Right drawer (editor) */
+    .drawer { position: fixed; top:0; right:0; height:100%; width: 380px; background: var(--surface); border-left:1px solid var(--border);
+              box-shadow: -10px 0 30px rgba(0,0,0,.35); transform: translateX(100%); transition: transform .25s ease; display:grid; grid-template-rows:auto 1fr auto; z-index: 40;}
+    .drawer.open { transform: translateX(0); }
+    .drawer header { padding:12px; border-bottom:1px solid var(--border); font-weight:900; display:flex; align-items:center; justify-content:space-between; }
+    .drawer .content { padding:12px; display:grid; gap: 10px; overflow:auto; }
+    .drawer footer { padding:12px; border-top:1px solid var(--border); display:flex; gap:8px; justify-content:flex-end; }
+
+    input, select, textarea { background: var(--panel); border:1px solid var(--border); border-radius: 10px; padding:8px 10px; color: var(--text); width: 100%; }
+    label { font-size: 12px; color: var(--muted); display:block; margin-bottom:4px; }
+    .small { font-size: 12px; color: var(--muted); }
+
+    /* Settings modal */
+    .modal { position: fixed; inset: 0; display:none; place-items:center; background: rgba(0,0,0,.45); z-index: 50; }
+    .modal.open { display: grid; }
+    .modal .sheet { width: min(680px, 96vw); background: var(--surface); border:1px solid var(--border); border-radius: 14px; padding: 14px; box-shadow: var(--shadow); }
+    .modal .actions { display:flex; gap:8px; justify-content:flex-end; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="logo">
+      <img src="./logo-variants/axis-logo-mark.svg" alt="AxIs"/>
+      <span>AxIs Roadmap Pro</span>
+    </div>
+    <div class="tabs" role="tablist">
+      <div class="tab active" data-view="flow">Flow</div>
+      <div class="tab" data-view="swim">Swimlanes</div>
+      <div class="tab" data-view="board">Board</div>
+      <div class="tab" data-view="milestones">Milestones</div>
+    </div>
+    <div class="toolbar">
+      <button id="depToggle" class="toggle" title="Dim cards with unmet dependencies">Dependencies: off</button>
+      <button id="exportBtn" class="btn" title="Export current view to PNG">Export PNG</button>
+      <button id="settingsBtn" class="ghost">Settings</button>
+      <button id="addItemBtn" class="ghost">+ Item</button>
+      <button id="saveBtn" class="btn">Save</button>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <section id="view-flow" class="flow">
+      <div class="stage-title">Program Flow (end‑to‑end)</div>
+      <div class="flow-inner">
+        <div class="lane" id="flowLane"></div>
+      </div>
+      <div class="legend" style="margin-top:8px;">
+        <div>Badge colors: <span class="pill done">done</span> <span class="pill progress">in‑progress</span> <span class="pill">planned</span></div>
+      </div>
+    </section>
+
+    <section id="view-swim" class="swim-wrap" style="display:none;"></section>
+
+    <section id="view-board" class="board" style="display:none;"></section>
+
+    <section id="view-milestones" class="milestones" style="display:none;">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div class="stage-title" style="margin:0;">Milestones</div>
+      </div>
+      <div>
+        <div class="card" style="padding:8px 10px; display:flex; justify-content:space-between;">
+          <div><strong>MVP</strong> – Viewer + Markups, Calibration, Dynamic Fill, RFI, Teams webhook</div>
+          <div id="mvpPct">0%</div>
+        </div>
+        <div class="bar"><div id="mvpBar"></div></div>
+      </div>
+      <div>
+        <div class="card" style="padding:8px 10px; display:flex; justify-content:space-between;">
+          <div><strong>v1.0</strong> – Compare/Overlay, Slip‑sheet, Batch Link/Sets, Session record, Dashboard polish</div>
+          <div id="v1Pct">0%</div>
+        </div>
+        <div class="bar"><div id="v1Bar"></div></div>
+      </div>
+      <div>
+        <div class="card" style="padding:8px 10px; display:flex; justify-content:space-between;">
+          <div><strong>v1.1</strong> – Teams unfurling + SSO tab, Excel link, AI auto‑calibrate, advanced annotations</div>
+          <div id="v11Pct">0%</div>
+        </div>
+        <div class="bar"><div id="v11Bar"></div></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Drawer editor -->
+  <aside id="drawer" class="drawer" aria-hidden="true">
+    <header>
+      <span>Edit Item</span>
+      <button id="closeDrawer" class="ghost">Close</button>
+    </header>
+    <div class="content">
+      <div>
+        <label for="f-title">Title</label>
+        <input id="f-title" />
+      </div>
+      <div>
+        <label for="f-desc">Description</label>
+        <textarea id="f-desc" rows="3"></textarea>
+      </div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+        <div>
+          <label for="f-status">Status</label>
+          <select id="f-status">
+            <option value="planned">planned</option>
+            <option value="progress">progress</option>
+            <option value="done">done</option>
+          </select>
+        </div>
+        <div>
+          <label for="f-milestone">Milestone</label>
+          <select id="f-milestone">
+            <option value="mvp">mvp</option>
+            <option value="v1">v1</option>
+            <option value="v11">v11</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label for="f-lane">Lane</label>
+        <select id="f-lane">
+          <option>PDF Engine</option>
+          <option>AI</option>
+          <option>Teams</option>
+          <option>UI</option>
+          <option>Data/Security</option>
+        </select>
+      </div>
+      <div>
+        <label for="f-tags">Tags (comma‑separated)</label>
+        <input id="f-tags" placeholder="e.g., Diff, Export, OCR"/>
+      </div>
+      <div>
+        <label for="f-deps">Dependencies (comma‑separated ids)</label>
+        <input id="f-deps" placeholder="e.g., vw-core, calibration"/>
+      </div>
+      <div class="small" id="f-id"></div>
+    </div>
+    <footer>
+      <button id="deleteItem" class="ghost" style="color:#fecaca; border-color:#ef4444;">Delete</button>
+      <button id="saveItem" class="btn">Save Item</button>
+    </footer>
+  </aside>
+
+  <!-- Settings modal -->
+  <div id="settings" class="modal" aria-hidden="true">
+    <div class="sheet">
+      <h3 style="margin:0 0 10px 0;">Settings</h3>
+      <div class="small" style="margin-bottom:8px;">Optional Supabase sync. Fallback is localStorage.</div>
+      <div style="display:grid; gap:10px;">
+        <div>
+          <label for="p-id">Project ID (UUID or slug)</label>
+          <input id="p-id" placeholder="your-project-id"/>
+        </div>
+        <div>
+          <label for="sb-url">SUPABASE_URL</label>
+          <input id="sb-url" placeholder="https://xxx.supabase.co"/>
+        </div>
+        <div>
+          <label for="sb-key">SUPABASE_ANON_KEY</label>
+          <input id="sb-key" placeholder="ey..."/>
+        </div>
+      </div>
+      <div class="actions">
+        <button id="closeSettings" class="ghost">Close</button>
+        <button id="testConn" class="ghost">Test</button>
+        <button id="saveSettings" class="btn">Save Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- libs -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+  <script>
+    // ============== DATA ==============
+    const DEFAULT_DATA = {
+      flow: [
+        { key:'intake', title:'PDF Intake', desc:'Upload drawings / docs', status:'done' },
+        { key:'extract', title:'AI Extract', desc:'Text · OCR · Symbols · Summary', status:'done' },
+        { key:'viewer', title:'Viewer + Markups', desc:'Render + overlay tools', status:'progress' },
+        { key:'measure', title:'Calibration + Measure', desc:'Scale, units, Dynamic Fill', status:'planned' },
+        { key:'compare', title:'Compare / Overlay', desc:'Visual diff + Change Explain', status:'planned' },
+        { key:'slipsheet', title:'Slip‑sheet + Batch Link', desc:'Preserve markups; auto links', status:'planned' },
+        { key:'rfi', title:'RFI / Punch Generator', desc:'PDF + Email + Assign', status:'progress' },
+        { key:'export', title:'Export', desc:'CSV / PDF / JSON summaries', status:'progress' },
+        { key:'teams', title:'Teams Notify', desc:'Webhook + Adaptive Card', status:'planned' },
+        { key:'dash', title:'Dashboard + Reminders', desc:'Cards, calendar, AI prompts', status:'progress' }
+      ],
+      items: [
+        // MVP Items - Now
+        { id:'vw-core', title:'PDF viewer core + overlays', lane:'PDF Engine', milestone:'mvp', status:'progress', tags:['PDF'], deps:[], desc:'Core PDF rendering with annotation overlays' },
+        { id:'calibration', title:'Calibration + units + guardrails', lane:'PDF Engine', milestone:'mvp', status:'planned', tags:['Measure'], deps:['vw-core'], desc:'Scale calibration and measurement units' },
+        { id:'dyn-fill', title:'Dynamic Fill (region grow)', lane:'PDF Engine', milestone:'mvp', status:'planned', tags:['Measure'], deps:['calibration'], desc:'Area calculation with region growing algorithm' },
+        { id:'rfi-rework', title:'RFI flow: PDF gen + Supabase + email', lane:'Data/Security', milestone:'mvp', status:'progress', tags:['RFI'], deps:[], desc:'Complete RFI generation and workflow' },
+        { id:'teams-webhook', title:'Teams webhook + Adaptive Card for RFI', lane:'Teams', milestone:'mvp', status:'planned', tags:['Teams'], deps:['rfi-rework'], desc:'Microsoft Teams integration for notifications' },
+        { id:'markups-list', title:'Markups List + CSV/PDF export', lane:'PDF Engine', milestone:'mvp', status:'planned', tags:['Export'], deps:['vw-core'], desc:'Annotation management and export capabilities' },
+        
+        // Completed Infrastructure Work
+        { id:'placeholder-cleanup', title:'Placeholder/Stub/Mock elimination (PH-016, PH-017 done)', lane:'Data/Security', milestone:'mvp', status:'progress', tags:['Code Quality'], deps:[], desc:'Systematic removal of production placeholders' },
+        { id:'toolbox-service', title:'Toolbox service integration + SVG parameter detection', lane:'PDF Engine', milestone:'mvp', status:'done', tags:['Toolbox'], deps:[], desc:'Real tool loading and SVG analysis - COMPLETED' },
+        { id:'openai-config', title:'OpenAI API configuration + environment setup', lane:'AI', milestone:'mvp', status:'done', tags:['AI','Config'], deps:[], desc:'API key setup and environment configuration - COMPLETED' },
+        { id:'ci-enforcement', title:'CI/CD pipeline + placeholder enforcement', lane:'Data/Security', milestone:'mvp', status:'done', tags:['DevOps'], deps:[], desc:'GitHub Actions workflow and quality gates - COMPLETED' },
+
+        // v1.0 Items - Next  
+        { id:'compare-overlay', title:'Compare/Overlay + Change Explain', lane:'AI', milestone:'v1', status:'planned', tags:['Diff'], deps:['vw-core'], desc:'Visual comparison between document versions' },
+        { id:'slip-batch', title:'Slip‑sheet + Batch Link + Sets', lane:'PDF Engine', milestone:'v1', status:'planned', tags:['Revisioning'], deps:['vw-core'], desc:'Page replacement with markup preservation' },
+        { id:'session-record', title:'Live Session + activity export', lane:'UI', milestone:'v1', status:'planned', tags:['Collab'], deps:[], desc:'Session recording and collaboration features' },
+        { id:'dash-polish', title:'Dashboard polish: info/weather/status cards', lane:'UI', milestone:'v1', status:'progress', tags:['UI'], deps:[], desc:'Enhanced dashboard with contextual cards' },
+
+        // v1.1 Items - Later
+        { id:'teams-unfurl', title:'Teams link unfurl + message extension', lane:'Teams', milestone:'v11', status:'planned', tags:['Teams'], deps:[], desc:'Rich link previews in Microsoft Teams' },
+        { id:'teams-tab', title:'Teams Tab + SSO', lane:'Teams', milestone:'v11', status:'planned', tags:['Teams'], deps:[], desc:'Teams tab application with single sign-on' },
+        { id:'excel-link', title:'Quantity link / Excel sync', lane:'Data/Security', milestone:'v11', status:'planned', tags:['Export'], deps:[], desc:'Bidirectional Excel integration for quantities' },
+        { id:'auto-cal', title:'AI auto‑calibrate from title block/scale bar', lane:'AI', milestone:'v11', status:'planned', tags:['AI'], deps:[], desc:'Automatic scale detection using AI' },
+        { id:'adv-annot', title:'Advanced annotations (callouts, notes, shapes)', lane:'PDF Engine', milestone:'v11', status:'planned', tags:['PDF'], deps:[], desc:'Enhanced annotation tools and shapes' },
+        { id:'local-storage', title:'Local file storage system with folder tree + cloud sync', lane:'Data/Security', milestone:'v11', status:'planned', tags:['Storage'], deps:[], desc:'Local-first storage with optional cloud sync' }
+      ]
+    };
+
+    const LANES = ['PDF Engine','AI','Teams','UI','Data/Security'];
+    const COLS = ['now','next','later'];
+    const STATUS_ORDER = { 'planned':0, 'progress':1, 'done':2 };
+
+    // ============== STATE & STORAGE ==============
+    const SKEY = 'axis_roadmap_pro_state';
+    const CKEY = 'axis_roadmap_pro_cfg';
+    let state = loadState();
+    let cfg = loadCfg();
+    let depDim = false;
+    let currentEdit = null;
+    let supabaseClient = null;
+
+    function loadState() {
+      const raw = localStorage.getItem(SKEY);
+      return raw ? JSON.parse(raw) : DEFAULT_DATA;
+    }
+    function saveState() {
+      localStorage.setItem(SKEY, JSON.stringify(state));
+    }
+    function loadCfg() {
+      const raw = localStorage.getItem(CKEY);
+      // Hardcode the Supabase configuration
+      const defaultCfg = { 
+        project_id: 'teambeam-roadmap', 
+        supabase_url: 'https://zwlwzvkwjmuznjdlylkx.supabase.co', 
+        supabase_key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp3bHd6dmt3am11em5qZGx5bGt4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY4MzExNTIsImV4cCI6MjA3MjQwNzE1Mn0.2anthjxMcK2QwCQynmaOm6LwMfhNRzjUxOzp-vJn66k' 
+      };
+      return raw ? {...defaultCfg, ...JSON.parse(raw)} : defaultCfg;
+    }
+    function saveCfg() { localStorage.setItem(CKEY, JSON.stringify(cfg)); }
+
+    function initSupabase() {
+      if (cfg.supabase_url && cfg.supabase_key) {
+        supabaseClient = window.supabase.createClient(cfg.supabase_url, cfg.supabase_key);
+      } else {
+        supabaseClient = null;
+      }
+    }
+
+    // ============== RENDERERS ==============
+    function render() {
+      renderFlow();
+      renderBoard();
+      renderSwim();
+      renderMilestones();
+    }
+
+    function badge(status) {
+      const cls = status === 'done' ? 'done' : status === 'progress' ? 'progress' : 'planned';
+      const text = status === 'done' ? 'Done' : status === 'progress' ? 'In Progress' : 'Planned';
+      return `<div class="badge ${cls}">${text}</div>`;
+    }
+
+    function renderFlow() {
+      const lane = document.getElementById('flowLane');
+      lane.innerHTML = '';
+      state.flow.forEach((n, i) => {
+        const el = document.createElement('div');
+        el.className = 'node';
+        el.innerHTML = `${badge(n.status)}<div class="title">${n.title}</div><div class="desc">${n.desc}</div>`;
+        lane.appendChild(el);
+        if (i < state.flow.length - 1) {
+          const arrow = document.createElement('div');
+          arrow.className = 'arrow';
+          lane.appendChild(arrow);
+        }
+      });
+    }
+
+    function cardHtml(it, dimBlocked) {
+      const blocked = (it.deps && it.deps.length) && it.deps.some(d => {
+        const dep = state.items.find(x => x.id === d);
+        return !dep || dep.status !== 'done';
+      });
+      const dim = dimBlocked && blocked ? 'dim' : '';
+      const stPill = it.status === 'done' ? '<span class="pill done">done</span>' : it.status === 'progress' ? '<span class="pill progress">in‑progress</span>' : '<span class="pill">planned</span>';
+      const deps = (it.deps||[]).map(d => `<span class="pill dep ${blocked?'blocked':''}">dep:${d}</span>`).join(' ');
+      const tags = (it.tags||[]).map(t => `<span class="pill">${t}</span>`).join(' ');
+      return `<div class="card ${dim}" data-id="${it.id}">
+        <div class="title">${it.title}</div>
+        <div class="meta">${stPill} <span class="pill">lane:${it.lane}</span> <span class="pill">ms:${it.milestone}</span> ${tags} ${deps}</div>
+      </div>`;
+    }
+
+    function renderBoard() {
+      const host = document.getElementById('view-board');
+      host.innerHTML = '';
+      const cols = { now:[], next:[], later:[] };
+      state.items.forEach(it => {
+        const col = it.milestone === 'mvp' ? 'now' : it.milestone === 'v1' ? 'next' : 'later';
+        cols[col].push(it);
+      });
+      Object.entries(cols).forEach(([key, items]) => {
+        items.sort((a,b)=> STATUS_ORDER[a.status]-STATUS_ORDER[b.status] || a.title.localeCompare(b.title));
+        const col = document.createElement('div');
+        col.className = 'col';
+        const done = items.filter(x => x.status === 'done').length;
+        col.innerHTML = `<header>
+          <div class="h">${key === 'now' ? 'Now' : key === 'next' ? 'Next' : 'Later'}</div>
+          <div class="meta">${done}/${items.length} done</div>
+        </header><div class="cards"></div>`;
+        const list = col.querySelector('.cards');
+        items.forEach(it => {
+          const wrapper = document.createElement('div');
+          wrapper.innerHTML = cardHtml(it, depDim);
+          const card = wrapper.firstElementChild;
+          card.addEventListener('click', () => openEditor(it.id));
+          list.appendChild(card);
+        });
+        host.appendChild(col);
+      });
+    }
+
+    function renderSwim() {
+      const host = document.getElementById('view-swim');
+      host.innerHTML = '';
+      LANES.forEach(name => {
+        const row = document.createElement('div');
+        row.className = 'lane-row';
+        row.innerHTML = `<div class="lane-header"><div class="lane-title">${name}</div></div><div class="lane-cards"></div>`;
+        const cards = row.querySelector('.lane-cards');
+        state.items.filter(x => x.lane === name).sort((a,b)=> STATUS_ORDER[a.status]-STATUS_ORDER[b.status] || a.title.localeCompare(b.title)).forEach(it => {
+          const wrap = document.createElement('div');
+          wrap.innerHTML = cardHtml(it, depDim);
+          const card = wrap.firstElementChild;
+          card.addEventListener('click', () => openEditor(it.id));
+          cards.appendChild(card);
+        });
+        host.appendChild(row);
+      });
+    }
+
+    function renderMilestones() {
+      const groups = { mvp:[], v1:[], v11:[] };
+      state.items.forEach(x => groups[x.milestone].push(x));
+      const pct = k => {
+        const arr = groups[k]; if (!arr.length) return 0;
+        const done = arr.filter(x => x.status === 'done').length;
+        return Math.round(100 * done / arr.length);
+      };
+      document.getElementById('mvpBar').style.width = pct('mvp') + '%';
+      document.getElementById('v1Bar').style.width = pct('v1') + '%';
+      document.getElementById('v11Bar').style.width = pct('v11') + '%';
+      document.getElementById('mvpPct').textContent = pct('mvp') + '%';
+      document.getElementById('v1Pct').textContent = pct('v1') + '%';
+      document.getElementById('v11Pct').textContent = pct('v11') + '%';
+    }
+
+    // ============== EDITOR ==============
+    const drawer = document.getElementById('drawer');
+    const fTitle = document.getElementById('f-title');
+    const fDesc = document.getElementById('f-desc');
+    const fStatus = document.getElementById('f-status');
+    const fMilestone = document.getElementById('f-milestone');
+    const fLane = document.getElementById('f-lane');
+    const fTags = document.getElementById('f-tags');
+    const fDeps = document.getElementById('f-deps');
+    const fId = document.getElementById('f-id');
+
+    function openEditor(id) {
+      const it = state.items.find(x => x.id === id);
+      if (!it) return;
+      currentEdit = id;
+      fTitle.value = it.title || '';
+      fDesc.value = it.desc || '';
+      fStatus.value = it.status || 'planned';
+      fMilestone.value = it.milestone || 'mvp';
+      fLane.value = it.lane || LANES[0];
+      fTags.value = (it.tags || []).join(', ');
+      fDeps.value = (it.deps || []).join(', ');
+      fId.textContent = 'id: ' + it.id;
+      drawer.classList.add('open');
+    }
+    document.getElementById('closeDrawer').addEventListener('click', ()=> drawer.classList.remove('open'));
+    document.getElementById('saveItem').addEventListener('click', () => {
+      if (!currentEdit) return;
+      const it = state.items.find(x => x.id === currentEdit);
+      it.title = fTitle.value.trim();
+      it.desc = fDesc.value.trim();
+      it.status = fStatus.value;
+      it.milestone = fMilestone.value;
+      it.lane = fLane.value;
+      it.tags = fTags.value.split(',').map(s=>s.trim()).filter(Boolean);
+      it.deps = fDeps.value.split(',').map(s=>s.trim()).filter(Boolean);
+      saveState();
+      render();
+      drawer.classList.remove('open');
+    });
+    document.getElementById('deleteItem').addEventListener('click', () => {
+      if (!currentEdit) return;
+      state.items = state.items.filter(x => x.id !== currentEdit);
+      saveState(); render(); drawer.classList.remove('open');
+    });
+    document.getElementById('addItemBtn').addEventListener('click', () => {
+      const id = prompt('New item id (slug, e.g., compare-overlay)');
+      if (!id) return;
+      if (state.items.find(x => x.id === id)) { alert('ID exists'); return; }
+      const it = { id, title: 'New item', lane: LANES[0], milestone: 'mvp', status: 'planned', tags: [], deps: [], desc: '' };
+      state.items.push(it); saveState(); render(); openEditor(id);
+    });
+
+    // ============== SETTINGS & SUPABASE ==============
+    const settings = document.getElementById('settings');
+    const pId = document.getElementById('p-id');
+    const sbUrl = document.getElementById('sb-url');
+    const sbKey = document.getElementById('sb-key');
+
+    function openSettings() {
+      pId.value = cfg.project_id || '';
+      sbUrl.value = cfg.supabase_url || '';
+      sbKey.value = cfg.supabase_key || '';
+      settings.classList.add('open');
+    }
+    function closeSettings() { settings.classList.remove('open'); }
+
+    document.getElementById('settingsBtn').addEventListener('click', openSettings);
+    document.getElementById('closeSettings').addEventListener('click', closeSettings);
+    document.getElementById('saveSettings').addEventListener('click', () => {
+      cfg.project_id = pId.value.trim();
+      cfg.supabase_url = sbUrl.value.trim();
+      cfg.supabase_key = sbKey.value.trim();
+      saveCfg(); initSupabase(); closeSettings();
+    });
+    document.getElementById('testConn').addEventListener('click', async () => {
+      try {
+        if (!sbUrl.value || !sbKey.value) return alert('Missing URL/key');
+        const client = window.supabase.createClient(sbUrl.value, sbKey.value);
+        const { data, error } = await client.from('roadmap_items').select('count', { count: 'exact', head: true });
+        if (error) throw error;
+        alert('Connected! roadmap_items rows: ' + data);
+      } catch (e) {
+        alert('Connection failed: ' + e.message);
+      }
+    });
+
+    // Save button → upsert state into Supabase (if configured), else local only
+    document.getElementById('saveBtn').addEventListener('click', async () => {
+      saveState();
+      if (!supabaseClient || !cfg.project_id) {
+        alert('Saved locally (localStorage). Set Supabase in Settings for team sync.');
+        return;
+      }
+      try {
+        // upsert items
+        const rows = state.items.map(x => ({
+          project_id: cfg.project_id,
+          slug: x.id,
+          title: x.title, description: x.desc,
+          status: x.status, milestone: x.milestone, lane: x.lane,
+          tags: x.tags, deps: x.deps
+        }));
+        const { error } = await supabaseClient.from('roadmap_items').upsert(rows, { onConflict: 'project_id,slug' });
+        if (error) throw error;
+        // upsert flow
+        const flowRows = state.flow.map((f, idx) => ({ project_id: cfg.project_id, key: f.key, title: f.title, description: f.desc, status: f.status, sort: idx }));
+        const { error: e2 } = await supabaseClient.from('roadmap_flow_nodes').upsert(flowRows, { onConflict: 'project_id,key' });
+        if (e2) throw e2;
+        alert('Saved to Supabase.');
+      } catch (e) {
+        alert('Supabase save failed: ' + e.message);
+      }
+    });
+
+    // Auto-load from Supabase (if configured)
+    async function tryLoadFromSupabase() {
+      if (!supabaseClient || !cfg.project_id) return false;
+      try {
+        const { data: items, error } = await supabaseClient
+          .from('roadmap_items')
+          .select('slug,title,description,status,milestone,lane,tags,deps')
+          .eq('project_id', cfg.project_id);
+        if (error) throw error;
+        const { data: flows, error: e2 } = await supabaseClient
+          .from('roadmap_flow_nodes')
+          .select('key,title,description,status,sort')
+          .eq('project_id', cfg.project_id)
+          .order('sort', { ascending: true });
+        if (e2) throw e2;
+        if (items && items.length) {
+          state.items = items.map(r => ({
+            id: r.slug, title: r.title, desc: r.description || '',
+            status: r.status, milestone: r.milestone, lane: r.lane,
+            tags: r.tags || [], deps: r.deps || []
+          }));
+        }
+        if (flows && flows.length) {
+          state.flow = flows.map(r => ({ key: r.key, title: r.title, desc: r.description || '', status: r.status }));
+        }
+        saveState();
+        return true;
+      } catch (e) {
+        console.warn('Supabase load failed', e);
+        return false;
+      }
+    }
+
+    // ============== EXPORT TO PNG ==============
+    async function exportPNG() {
+      const active = document.querySelector('.tabs .tab.active')?.dataset.view || 'flow';
+      const el = document.getElementById('view-' + active);
+      if (!el) return;
+      const canvas = await html2canvas(el, { backgroundColor: null });
+      const url = canvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `axis-${active}.png`;
+      link.click();
+    }
+    document.getElementById('exportBtn').addEventListener('click', exportPNG);
+
+    // ============== TABS & TOGGLES ==============
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const v = tab.dataset.view;
+        ['flow','swim','board','milestones'].forEach(name => {
+          document.getElementById('view-' + name).style.display = (name === v) ? (name === 'flow' ? 'block' : 'grid') : 'none';
+          if (name === 'flow') document.getElementById('view-flow').style.display = (name === v) ? 'block' : 'none';
+        });
+      });
+    });
+
+    document.getElementById('depToggle').addEventListener('click', () => {
+      depDim = !depDim;
+      document.getElementById('depToggle').textContent = 'Dependencies: ' + (depDim ? 'on' : 'off');
+      renderBoard(); renderSwim();
+    });
+
+    // ============== INIT ==============
+    initSupabase();
+    (async () => {
+      const loaded = await tryLoadFromSupabase();
+      render();
+    })();
+  </script>
+</body>
+</html>
