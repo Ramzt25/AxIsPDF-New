@@ -1,0 +1,102 @@
+# Sample Pipeline: Drawing Markup Review
+# Add review stamps and markups to construction drawings
+
+version: 1  
+name: "Drawing Markup Review"
+description: "Add review stamps, markups, and comments to construction drawings"
+
+# Process specific drawings for review
+foreach:
+  files: "./drawings/for-review/*.pdf"
+  steps:
+    # Open the drawing
+    - open: "${file.path}"
+    
+    # Check if this is a title sheet vs detail sheet
+    - find_text:
+        name: "sheet_type"
+        query: "TITLE SHEET|COVER SHEET|INDEX|DETAIL|SECTION|PLAN"
+        regex: "(TITLE SHEET|COVER SHEET|INDEX|DETAIL|SECTION|PLAN)"
+        page: 1
+        
+    # Add review stamp based on sheet type
+    - if: "${results.sheet_type.found}"
+      then:
+        - stamp_image:
+            image: "./stamps/reviewed-${results.sheet_type.value.toLowerCase()}.png"
+            position: "top-right"
+            x: -100
+            y: 50
+            scale: 0.8
+      else:
+        - stamp_image:
+            image: "./stamps/reviewed-general.png"
+            position: "top-right" 
+            x: -100
+            y: 50
+            scale: 0.8
+            
+    # Add reviewer information stamp
+    - stamp_text:
+        text: "REVIEWED BY: ${reviewer.name}\nDATE: ${now.short}\nREV: ${revision}"
+        position: "bottom-right"
+        x: -150
+        y: -50
+        font: "Arial"
+        size: 8
+        color: "red"
+        background: "white"
+        border: true
+        
+    # Find and mark any RFI items
+    - find_text:
+        name: "rfi_items"
+        query: "RFI|REQUEST FOR INFORMATION|CLARIFICATION NEEDED"
+        regex: ".{0,50}(RFI|REQUEST FOR INFORMATION|CLARIFICATION NEEDED).{0,50}"
+        pages: "all"
+        
+    # Add RFI markup if found
+    - if: "${results.rfi_items.found}"
+      then:
+        - foreach:
+            items: "${results.rfi_items.matches}"
+            steps:
+              - add_markup:
+                  type: "highlight"
+                  text: "${item.text}"
+                  color: "yellow"
+                  opacity: 0.5
+                  page: "${item.page}"
+              - add_markup:
+                  type: "note"
+                  text: "RFI Required - See project manager"
+                  x: "${item.x + 50}"
+                  y: "${item.y}"
+                  color: "red"
+                  page: "${item.page}"
+                  
+    # Save reviewed version
+    - save:
+        path: "./drawings/reviewed/${file.name}_reviewed.pdf"
+        
+    # Create summary report
+    - export_json:
+        path: "./reports/${file.name}_review.json"
+        data:
+          original_file: "${file.path}"
+          reviewed_file: "./drawings/reviewed/${file.name}_reviewed.pdf"
+          reviewer: "${reviewer.name}"
+          review_date: "${now}"
+          sheet_type: "${results.sheet_type.value || 'Unknown'}"
+          rfi_count: "${results.rfi_items.matches.length || 0}"
+          rfi_items: "${results.rfi_items.matches || []}"
+          status: "REVIEWED"
+
+# Pipeline variables
+variables:
+  reviewer:
+    name: "John Smith, PE"
+    title: "Project Manager"
+    company: "ABC Construction"
+  revision: "A"
+  stamp_color: "red"

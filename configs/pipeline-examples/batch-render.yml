@@ -1,0 +1,57 @@
+# Sample Pipeline: Batch Rendering
+# Convert PDFs to images for sharing/review
+
+version: 1
+name: "Batch PDF to Image Renderer"
+description: "Convert PDF pages to high-quality images for sharing"
+
+# Process all PDFs in input directory
+foreach:
+  files: "./input/**/*.pdf"
+  steps:
+    # Open the PDF
+    - open: "${file.path}"
+    
+    # Render each page to PNG
+    - render:
+        pages: "all"
+        format: "png"
+        dpi: 300
+        background: "white"
+        path: "./images/${file.name}/page-${page}.png"
+        
+    # Create thumbnail versions
+    - render:
+        pages: "all"
+        format: "png"
+        dpi: 72
+        width: 200
+        background: "white"
+        path: "./images/${file.name}/thumb-${page}.png"
+        
+    # Generate a contact sheet (all pages as one image)
+    - render:
+        pages: "all"
+        format: "png"
+        dpi: 150
+        layout: "grid"     # Arrange pages in grid
+        cols: 2            # 2 columns
+        spacing: 10        # 10px between pages
+        path: "./images/${file.name}/contact-sheet.png"
+        
+    # Export metadata about the rendered images
+    - export_json:
+        path: "./images/${file.name}/metadata.json"
+        data:
+          source_file: "${file.path}"
+          pages: "${doc.pages}"
+          rendered_at: "${now}"
+          high_res_dpi: 300
+          thumbnail_dpi: 72
+          contact_sheet_layout: "2x${Math.ceil(doc.pages/2)}"
+
+variables:
+  # Default settings
+  default_dpi: 300
+  thumb_size: 200
+  contact_sheet_cols: 2

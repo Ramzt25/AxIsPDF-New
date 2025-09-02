@@ -1,0 +1,285 @@
+# TeamBeam OCR Language Configuration
+# Tesseract language packs and settings
+
+# Available Languages
+languages:
+  eng:
+    name: "English"
+    code: "eng"
+    priority: 1
+    default: true
+    description: "English language pack"
+    
+  spa:
+    name: "Spanish"
+    code: "spa"
+    priority: 2
+    description: "Spanish language pack"
+    
+  fra:
+    name: "French"
+    code: "fra"
+    priority: 3
+    description: "French language pack"
+    
+  deu:
+    name: "German"
+    code: "deu"
+    priority: 4
+    description: "German language pack"
+    
+  ita:
+    name: "Italian"
+    code: "ita"
+    priority: 5
+    description: "Italian language pack"
+    
+  por:
+    name: "Portuguese"
+    code: "por"
+    priority: 6
+    description: "Portuguese language pack"
+    
+  chi_sim:
+    name: "Chinese Simplified"
+    code: "chi_sim"
+    priority: 7
+    description: "Simplified Chinese language pack"
+    
+  jpn:
+    name: "Japanese"
+    code: "jpn"
+    priority: 8
+    description: "Japanese language pack"
+    
+  rus:
+    name: "Russian"
+    code: "rus"
+    priority: 9
+    description: "Russian language pack"
+    
+  ara:
+    name: "Arabic"
+    code: "ara"
+    priority: 10
+    description: "Arabic language pack"
+    rtl: true
+    
+# Page Segmentation Modes (PSM)
+psm_modes:
+  0:
+    name: "OSD only"
+    description: "Orientation and script detection only"
+    use_case: "Determine text orientation"
+    
+  1:
+    name: "Auto with OSD"
+    description: "Automatic page segmentation with orientation and script detection"
+    use_case: "Mixed layouts with orientation detection"
+    
+  2:
+    name: "Auto without OSD"
+    description: "Automatic page segmentation without orientation and script detection"
+    use_case: "Standard mixed layouts"
+    
+  3:
+    name: "Fully auto"
+    description: "Fully automatic page segmentation, but no OSD"
+    use_case: "General purpose, most documents"
+    recommended: true
+    
+  4:
+    name: "Single column"
+    description: "Assume a single column of text of variable sizes"
+    use_case: "Single column documents"
+    
+  5:
+    name: "Single block"
+    description: "Assume a single uniform block of vertically aligned text"
+    use_case: "Single paragraph or block"
+    
+  6:
+    name: "Single line"
+    description: "Assume a single uniform line of text"
+    use_case: "Single line text, labels"
+    construction_default: true
+    
+  7:
+    name: "Single word"
+    description: "Treat the image as a single word"
+    use_case: "Individual words, stamps"
+    
+  8:
+    name: "Single character"
+    description: "Treat the image as a single character"
+    use_case: "Individual characters"
+    
+  9:
+    name: "Single word in circle"
+    description: "Treat the image as a single word in a circle"
+    use_case: "Circular text, seals"
+    
+  10:
+    name: "Single character sparse"
+    description: "Treat the image as a single character, sparse text"
+    use_case: "Isolated characters"
+    
+  11:
+    name: "Sparse text"
+    description: "Sparse text. Find as much text as possible in no particular order"
+    use_case: "Scattered text, annotations"
+    
+  12:
+    name: "Sparse text with OSD"
+    description: "Sparse text with orientation and script detection"
+    use_case: "Scattered text with orientation detection"
+    
+  13:
+    name: "Raw line"
+    description: "Raw line. Treat the image as a single text line, bypassing hacks"
+    use_case: "Single line, no preprocessing"
+    
+# OCR Engine Modes (OEM)
+oem_modes:
+  0:
+    name: "Legacy only"
+    description: "Original Tesseract only"
+    use_case: "Compatibility mode"
+    
+  1:
+    name: "Neural nets LSTM only"
+    description: "Neural nets LSTM engine only"
+    use_case: "Best accuracy, modern documents"
+    recommended: true
+    
+  2:
+    name: "Legacy + LSTM"
+    description: "Legacy + LSTM engines"
+    use_case: "Fallback combination"
+    
+  3:
+    name: "Default"
+    description: "Based on what is available"
+    use_case: "Automatic selection"
+    
+# Construction-Specific Settings
+construction_optimized:
+  drawing_text:
+    psm: 6                        # Single line
+    oem: 1                        # LSTM
+    confidence_threshold: 70
+    whitelist: "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-. "
+    
+  title_blocks:
+    psm: 3                        # Fully auto
+    oem: 1                        # LSTM
+    confidence_threshold: 80
+    preprocessing:
+      enhance_contrast: true
+      sharpen: true
+      noise_reduction: true
+      
+  dimensions:
+    psm: 6                        # Single line
+    oem: 1                        # LSTM
+    confidence_threshold: 85
+    whitelist: "0123456789.-\"' x×X"
+    
+  room_labels:
+    psm: 6                        # Single line
+    oem: 1                        # LSTM
+    confidence_threshold: 75
+    preprocessing:
+      enhance_contrast: true
+      
+  stamps_and_seals:
+    psm: 7                        # Single word
+    oem: 1                        # LSTM
+    confidence_threshold: 60
+    preprocessing:
+      enhance_contrast: true
+      sharpen: true
+      
+# Preprocessing Settings
+preprocessing:
+  default:
+    resize_factor: 2.0            # Scale up for better OCR
+    gaussian_blur: 0              # Blur radius (0 = disabled)
+    sharpen: false
+    enhance_contrast: true
+    noise_reduction: true
+    threshold_type: "adaptive"    # binary, adaptive, otsu
+    
+  scanned_drawings:
+    resize_factor: 3.0
+    gaussian_blur: 1
+    sharpen: true
+    enhance_contrast: true
+    noise_reduction: true
+    deskew: true
+    threshold_type: "otsu"
+    
+  low_quality:
+    resize_factor: 4.0
+    gaussian_blur: 0
+    sharpen: true
+    enhance_contrast: true
+    noise_reduction: true
+    deskew: true
+    threshold_type: "adaptive"
+    
+# Quality Thresholds
+quality_thresholds:
+  excellent: 95
+  good: 85
+  acceptable: 70
+  poor: 50
+  unusable: 30
+  
+# Auto-Detection Rules
+auto_detection:
+  # Automatically detect if OCR is needed
+  ocr_needed_if:
+    - "text_extraction_confidence < 80"
+    - "contains_scanned_images"
+    - "low_text_density"
+    
+  # Language detection
+  language_detection:
+    enabled: true
+    confidence_threshold: 80
+    fallback_language: "eng"
+    
+  # Document type detection
+  document_type:
+    title_sheet:
+      keywords: ["TITLE SHEET", "COVER SHEET", "INDEX"]
+      ocr_settings: "title_blocks"
+      
+    floor_plan:
+      keywords: ["FLOOR PLAN", "PLAN VIEW"]
+      ocr_settings: "drawing_text"
+      
+    detail:
+      keywords: ["DETAIL", "SECTION"]
+      ocr_settings: "drawing_text"
+      
+    specification:
+      keywords: ["SPECIFICATION", "SPEC"]
+      ocr_settings: "default"
+      
+# Performance Settings
+performance:
+  parallel_processing: true
+  max_workers: 4
+  chunk_size: 1024              # KB
+  cache_results: true
+  cache_ttl: 3600               # seconds
+  
+# Error Handling
+error_handling:
+  retry_attempts: 3
+  retry_delay: 1000             # milliseconds
+  fallback_to_different_psm: true
+  fallback_to_different_oem: false
+  log_failures: true

@@ -1,0 +1,278 @@
+# Sample Pipeline: Custom JavaScript Functions
+# Demonstrates the power of custom scripting in TeamBeam
+
+version: 1
+name: "Custom JavaScript Processing"
+description: "Advanced document processing using custom JavaScript functions"
+
+# Process construction drawings with custom logic
+foreach:
+  files: "./input/**/*.pdf"
+  steps:
+    # Open the PDF
+    - open: "${file.path}"
+    
+    # Extract all text with OCR
+    - ocr:
+        pages: "all"
+        lang: "eng"
+        
+    # Custom function: Extract room information
+    - js:
+        name: "extract_rooms"
+        code: |
+          // Custom room extraction logic
+          const roomPattern = /ROOM\s+(\d+)\s*[:-]?\s*([^\n]+)/gi;
+          const rooms = [];
+          let match;
+          
+          // Process each page
+          for (let i = 0; i < results.ocr.pages.length; i++) {
+            const pageText = results.ocr.pages[i].text;
+            const pageNum = i + 1;
+            
+            while ((match = roomPattern.exec(pageText)) !== null) {
+              rooms.push({
+                number: match[1],
+                name: match[2].trim(),
+                page: pageNum,
+                location: {
+                  text: match[0],
+                  index: match.index
+                }
+              });
+            }
+          }
+          
+          console.log(`Found ${rooms.length} rooms across ${results.ocr.pages.length} pages`);
+          return rooms;
+        
+    # Custom function: Calculate areas and validate dimensions
+    - js:
+        name: "calculate_areas"
+        code: |
+          // Extract and calculate room areas
+          const areaPattern = /(\d+(?:\.\d+)?)\s*(?:SF|SQ\s*FT|SQFT)/gi;
+          const dimensionPattern = /(\d+(?:\.\d+)?)['"]*\s*[xX×]\s*(\d+(?:\.\d+)?)['"]*(?:\s*(?:SF|SQ\s*FT))?/gi;
+          
+          let totalArea = 0;
+          const roomAreas = [];
+          let dimensionChecks = [];
+          
+          for (let i = 0; i < results.ocr.pages.length; i++) {
+            const pageText = results.ocr.pages[i].text;
+            
+            // Extract area values
+            let areaMatch;
+            while ((areaMatch = areaPattern.exec(pageText)) !== null) {
+              const area = parseFloat(areaMatch[1]);
+              totalArea += area;
+              roomAreas.push({
+                area: area,
+                page: i + 1,
+                text: areaMatch[0]
+              });
+            }
+            
+            // Extract and validate dimensions
+            let dimMatch;
+            while ((dimMatch = dimensionPattern.exec(pageText)) !== null) {
+              const width = parseFloat(dimMatch[1]);
+              const height = parseFloat(dimMatch[2]);
+              const calculatedArea = width * height;
+              
+              dimensionChecks.push({
+                width: width,
+                height: height,
+                calculated_area: calculatedArea,
+                page: i + 1,
+                text: dimMatch[0]
+              });
+            }
+          }
+          
+          console.log(`Total area found: ${totalArea} SF`);
+          console.log(`Validated ${dimensionChecks.length} dimension calculations`);
+          
+          return {
+            total_area: totalArea,
+            room_areas: roomAreas,
+            dimension_checks: dimensionChecks,
+            area_per_page: roomAreas.reduce((acc, item) => {
+              acc[item.page] = (acc[item.page] || 0) + item.area;
+              return acc;
+            }, {})
+          };
+    
+    # Custom function: Quality validation
+    - js:
+        name: "quality_check"
+        code: |
+          // Comprehensive quality validation
+          const issues = [];
+          const warnings = [];
+          
+          // Check for required title block fields
+          const requiredFields = [
+            { field: 'PROJECT', pattern: /PROJECT\s*(?:NO|NUMBER|#)\s*:\s*([A-Z0-9\-]+)/i },
+            { field: 'DRAWING', pattern: /DRAWING\s*(?:NO|NUMBER|#)\s*:\s*([A-Z0-9\-\.]+)/i },
+            { field: 'REVISION', pattern: /REV(?:ISION)?\s*:\s*([A-Z0-9]+)/i },
+            { field: 'DATE', pattern: /DATE\s*:\s*(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/i }
+          ];
+          
+          const titlePage = results.ocr.pages[0]?.text || '';
+          
+          requiredFields.forEach(req => {
+            if (!req.pattern.test(titlePage)) {
+              issues.push(`Missing or invalid ${req.field} in title block`);
+            }
+          });
+          
+          // Check for TBD items
+          const tbdPattern = /TBD|TO BE DETERMINED|TBC|TO BE CONFIRMED/gi;
+          const tbdMatches = [];
+          
+          results.ocr.pages.forEach((page, index) => {
+            let match;
+            while ((match = tbdPattern.exec(page.text)) !== null) {
+              tbdMatches.push({
+                text: match[0],
+                page: index + 1,
+                context: page.text.substr(Math.max(0, match.index - 50), 100)
+              });
+            }
+          });
+          
+          if (tbdMatches.length > 0) {
+            warnings.push(`Found ${tbdMatches.length} TBD items requiring resolution`);
+          }
+          
+          // Check for potential errors
+          const errorPatterns = [
+            { pattern: /ERROR|MISSING|UNDEFINED/gi, type: 'errors' },
+            { pattern: /NOT TO SCALE|NTS|NO SCALE/gi, type: 'scale_warnings' },
+            { pattern: /VERIFY|CONFIRM|CHECK/gi, type: 'verification_required' }
+          ];
+          
+          const foundIssues = {};
+          
+          errorPatterns.forEach(ep => {
+            foundIssues[ep.type] = [];
+            results.ocr.pages.forEach((page, index) => {
+              let match;
+              while ((match = ep.pattern.exec(page.text)) !== null) {
+                foundIssues[ep.type].push({
+                  text: match[0],
+                  page: index + 1
+                });
+              }
+            });
+          });
+          
+          // Calculate quality score
+          let score = 100;
+          score -= issues.length * 10;        // Major issues
+          score -= warnings.length * 5;       // Warnings
+          score -= tbdMatches.length * 3;     // TBD items
+          score = Math.max(0, score);
+          
+          console.log(`Quality check completed. Score: ${score}/100`);
+          console.log(`Issues: ${issues.length}, Warnings: ${warnings.length}, TBDs: ${tbdMatches.length}`);
+          
+          return {
+            score: score,
+            status: score >= 90 ? 'EXCELLENT' : score >= 75 ? 'GOOD' : score >= 50 ? 'FAIR' : 'POOR',
+            issues: issues,
+            warnings: warnings,
+            tbd_items: tbdMatches,
+            found_issues: foundIssues,
+            recommendations: score < 75 ? [
+              'Review and complete all TBD items',
+              'Verify all required title block information',
+              'Address any scale or verification notes'
+            ] : []
+          };
+    
+    # Export comprehensive report using our custom analysis
+    - export_json:
+        path: "./reports/${file.name}_analysis.json"
+        data:
+          metadata:
+            file: "${file.path}"
+            processed_date: "${now}"
+            pages: "${doc.pages}"
+          room_analysis: "${results.extract_rooms.result}"
+          area_calculations: "${results.calculate_areas.result}"
+          quality_assessment: "${results.quality_check.result}"
+          execution_stats:
+            room_extraction_time: "${results.extract_rooms.executionTime}ms"
+            area_calculation_time: "${results.calculate_areas.executionTime}ms"
+            quality_check_time: "${results.quality_check.executionTime}ms"
+          
+    # Generate executive summary
+    - js:
+        name: "executive_summary"
+        code: |
+          const rooms = results.extract_rooms.result;
+          const areas = results.calculate_areas.result;
+          const quality = results.quality_check.result;
+          
+          const summary = {
+            document: file.name,
+            overview: {
+              total_rooms: rooms.length,
+              total_area: areas.total_area,
+              quality_score: quality.score,
+              quality_status: quality.status
+            },
+            key_findings: [],
+            action_items: [],
+            compliance: {
+              title_block_complete: quality.issues.length === 0,
+              no_tbd_items: quality.tbd_items.length === 0,
+              overall_ready: quality.score >= 75
+            }
+          };
+          
+          // Generate key findings
+          if (rooms.length > 0) {
+            summary.key_findings.push(`Document contains ${rooms.length} identified rooms`);
+          }
+          
+          if (areas.total_area > 0) {
+            summary.key_findings.push(`Total calculated area: ${areas.total_area.toLocaleString()} SF`);
+          }
+          
+          if (quality.tbd_items.length > 0) {
+            summary.key_findings.push(`${quality.tbd_items.length} items require completion (TBD)`);
+          }
+          
+          // Generate action items
+          quality.issues.forEach(issue => {
+            summary.action_items.push({ priority: 'HIGH', item: issue });
+          });
+          
+          quality.warnings.forEach(warning => {
+            summary.action_items.push({ priority: 'MEDIUM', item: warning });
+          });
+          
+          if (quality.recommendations.length > 0) {
+            quality.recommendations.forEach(rec => {
+              summary.action_items.push({ priority: 'LOW', item: rec });
+            });
+          }
+          
+          console.log(`Executive summary generated for ${file.name}`);
+          console.log(`Status: ${summary.compliance.overall_ready ? 'READY' : 'NEEDS ATTENTION'}`);
+          
+          return summary;
+    
+    # Export executive summary
+    - export_json:
+        path: "./reports/${file.name}_summary.json"
+        data: "${results.executive_summary.result}"
+
+variables:
+  min_quality_score: 75
+  require_title_block: true
+  flag_tbd_items: true

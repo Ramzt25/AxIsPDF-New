@@ -1,0 +1,615 @@
+/* ProjectView.css */
+/* Main project workspace styling */
+
+.project-view {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #f8f9fa;
+  overflow: hidden;
+}
+
+/* Project Header */
+.project-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  background: #ffffff;
+  border-bottom: 1px solid #e0e0e0;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+.project-info h1 {
+  margin: 0 0 4px 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+}
+
+.project-path {
+  margin: 0;
+  font-size: 14px;
+  color: #666;
+  font-family: 'Courier New', monospace;
+}
+
+.project-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.project-btn {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.project-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+}
+
+.project-btn:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.project-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.unsaved-indicator {
+  color: #ef4444;
+  font-weight: 500;
+}
+
+.last-save {
+  color: #10b981;
+  font-size: 12px;
+}
+
+.toolbox-toggle {
+  padding: 8px 16px;
+  background: #f5f5f5;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #666;
+}
+
+.toolbox-toggle:hover {
+  background: #e8e8e8;
+  border-color: #bbb;
+}
+
+.toolbox-toggle.active {
+  background: #0066cc;
+  border-color: #0066cc;
+  color: white;
+}
+
+/* Project Content */
+.project-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Drawing Browser Sidebar */
+.drawing-browser {
+  width: 280px;
+  background: #ffffff;
+  border-right: 1px solid #e0e0e0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.browser-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e0e0e0;
+  background: #f8f9fa;
+}
+
+.browser-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.refresh-btn {
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  color: #666;
+  transition: all 0.2s ease;
+}
+
+.refresh-btn:hover {
+  background: #e8e8e8;
+  color: #333;
+}
+
+.drawings-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.drawing-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-left: 3px solid transparent;
+}
+
+.drawing-item:hover {
+  background: #f8f9fa;
+}
+
+.drawing-item.selected {
+  background: #e3f2fd;
+  border-left-color: #0066cc;
+}
+
+.drawing-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.drawing-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.browser-footer {
+  padding: 16px 20px;
+  border-top: 1px solid #e0e0e0;
+  background: #f8f9fa;
+}
+
+.import-btn {
+  width: 100%;
+  padding: 10px 16px;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.import-btn:hover {
+  background: #218838;
+}
+
+/* Drawing Canvas Container */
+.drawing-canvas-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.drawing-canvas {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.canvas-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid #e0e0e0;
+  background: #f8f9fa;
+}
+
+.canvas-header h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.canvas-tools {
+  display: flex;
+  gap: 8px;
+}
+
+.canvas-tools button {
+  padding: 8px 12px;
+  background: #f5f5f5;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.canvas-tools button:hover {
+  background: #e8e8e8;
+  border-color: #bbb;
+}
+
+/* Drawing Viewport */
+.drawing-viewport {
+  flex: 1;
+  position: relative;
+  overflow: auto;
+  background: #f0f0f0;
+}
+
+.drawing-placeholder {
+  height: 100%;
+  position: relative;
+  background: linear-gradient(45deg, #ffffff 25%, transparent 25%),
+              linear-gradient(-45deg, #ffffff 25%, transparent 25%),
+              linear-gradient(45deg, transparent 75%, #ffffff 75%),
+              linear-gradient(-45deg, transparent 75%, #ffffff 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+}
+
+.placeholder-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.placeholder-content h3 {
+  margin: 0 0 12px 0;
+  font-size: 24px;
+  color: #333;
+}
+
+.placeholder-content p {
+  margin: 8px 0;
+  color: #666;
+  font-size: 16px;
+}
+
+.placed-tools-count {
+  margin-top: 16px !important;
+  padding-top: 16px;
+  border-top: 1px solid #e0e0e0;
+  font-weight: 600;
+  color: #0066cc !important;
+}
+
+/* Placed Tool Markers */
+.placed-tool-marker {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  z-index: 5;
+}
+
+.tool-marker {
+  width: 32px;
+  height: 32px;
+  background: #0066cc;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  box-shadow: 0 2px 8px rgba(0, 102, 204, 0.3);
+  transition: all 0.2s ease;
+}
+
+.placed-tool-marker:hover .tool-marker {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.4);
+}
+
+.tool-label {
+  position: absolute;
+  top: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.placed-tool-marker:hover .tool-label {
+  opacity: 1;
+}
+
+/* No Drawing Selected */
+.no-drawing-selected {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8f9fa;
+}
+
+.empty-state {
+  text-align: center;
+  color: #666;
+}
+
+.empty-icon {
+  font-size: 64px;
+  margin-bottom: 24px;
+  opacity: 0.5;
+}
+
+.empty-state h2 {
+  margin: 0 0 12px 0;
+  font-size: 24px;
+  color: #333;
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: 16px;
+  max-width: 400px;
+}
+
+/* Toolbox Panel */
+.toolbox-panel {
+  width: 320px;
+  background: #ffffff;
+  border-left: 1px solid #e0e0e0;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.project-toolbox {
+  height: 100%;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* Status Bar */
+.status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 24px;
+  background: #2d2d2d;
+  color: #ffffff;
+  font-size: 13px;
+  border-top: 1px solid #404040;
+}
+
+.status-left,
+.status-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.status-bar span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .toolbox-panel {
+    width: 280px;
+  }
+}
+
+@media (max-width: 768px) {
+  .project-content {
+    flex-direction: column;
+  }
+  
+  .drawing-browser {
+    width: 100%;
+    height: 200px;
+    border-right: none;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  
+  .drawings-list {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    padding: 8px;
+  }
+  
+  .drawing-item {
+    flex-shrink: 0;
+    min-width: 200px;
+  }
+  
+  .toolbox-panel {
+    width: 100%;
+    height: 300px;
+    border-left: none;
+    border-top: 1px solid #e0e0e0;
+  }
+  
+  .status-bar {
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
+  
+  .status-left,
+  .status-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .project-view {
+    background: #1e1e1e;
+  }
+  
+  .project-header,
+  .drawing-browser,
+  .drawing-canvas-container {
+    background: #2d2d2d;
+    border-color: #404040;
+    color: #ffffff;
+  }
+  
+  .browser-header,
+  .canvas-header {
+    background: #404040;
+    border-color: #555555;
+  }
+  
+  .drawing-item:hover {
+    background: #404040;
+  }
+  
+  .drawing-item.selected {
+    background: #1a365d;
+  }
+  
+  .drawing-placeholder {
+    background: #2d2d2d;
+  }
+  
+  .placeholder-content {
+    background: rgba(45, 45, 45, 0.95);
+    color: #ffffff;
+  }
+  
+  .no-drawing-selected {
+    background: #2d2d2d;
+  }
+  
+  .toolbox-panel {
+    background: #2d2d2d;
+    border-color: #404040;
+  }
+}
+
+/* Drawing viewport with PDF viewer integration */
+.drawing-viewport {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background: #f8f9fa;
+  overflow: hidden;
+}
+
+.project-pdf-viewer {
+  flex: 1;
+  border-radius: 0;
+}
+
+/* Tool placement overlay */
+.placed-tool-marker {
+  position: absolute;
+  pointer-events: none;
+  z-index: 100;
+  transform: translate(-50%, -50%);
+}
+
+.tool-marker {
+  background: rgba(0, 102, 204, 0.9);
+  color: white;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  border: 2px solid white;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.tool-label {
+  position: absolute;
+  top: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  white-space: nowrap;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Tool overlay container */
+.tool-overlay-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 200;
+}
+
+.tool-overlay-container .placed-tool-marker {
+  pointer-events: auto;
+}
+
+.tool-missing .tool-marker {
+  background: rgba(255, 102, 102, 0.9);
+}
+
+.tool-missing .tool-label {
+  background: rgba(255, 102, 102, 0.8);
+}

@@ -1,0 +1,297 @@
+# TeamBeam Stamp Templates
+# Predefined stamps for construction document markup
+
+# Standard Approval Stamps
+approval_stamps:
+  approved:
+    text: "APPROVED"
+    background_color: "#4CAF50"
+    text_color: "white"
+    border_color: "#388E3C"
+    border_width: 2
+    font_family: "Arial Bold"
+    font_size: 12
+    padding: 8
+    rounded_corners: 4
+    include_date: true
+    include_signature_line: true
+    signature_text: "Signature:"
+    
+  approved_with_comments:
+    text: "APPROVED\nWITH COMMENTS"
+    background_color: "#FF9800"
+    text_color: "white"
+    border_color: "#F57F17"
+    border_width: 2
+    font_family: "Arial Bold"
+    font_size: 10
+    padding: 8
+    rounded_corners: 4
+    include_date: true
+    include_signature_line: true
+    
+  rejected:
+    text: "REJECTED"
+    background_color: "#F44336"
+    text_color: "white"
+    border_color: "#C62828"
+    border_width: 3
+    font_family: "Arial Bold"
+    font_size: 12
+    padding: 8
+    rounded_corners: 4
+    include_date: true
+    include_signature_line: true
+    comments_required: true
+    
+# Review Status Stamps
+review_stamps:
+  reviewed:
+    text: "REVIEWED"
+    background_color: "#2196F3"
+    text_color: "white"
+    border_color: "#1565C0"
+    border_width: 2
+    font_family: "Arial"
+    font_size: 11
+    padding: 6
+    include_date: true
+    reviewer_field: true
+    
+  under_review:
+    text: "UNDER REVIEW"
+    background_color: "#FFC107"
+    text_color: "black"
+    border_color: "#FF8F00"
+    border_width: 2
+    font_family: "Arial"
+    font_size: 10
+    padding: 6
+    include_date: true
+    
+  pending_review:
+    text: "PENDING REVIEW"
+    background_color: "#9C27B0"
+    text_color: "white"
+    border_color: "#6A1B9A"
+    border_width: 2
+    font_family: "Arial"
+    font_size: 10
+    padding: 6
+    
+# Construction Phase Stamps
+construction_stamps:
+  for_construction:
+    text: "FOR\nCONSTRUCTION"
+    background_color: "#4CAF50"
+    text_color: "white"
+    border_color: "#2E7D32"
+    border_width: 3
+    font_family: "Arial Bold"
+    font_size: 12
+    padding: 10
+    rounded_corners: 6
+    include_date: true
+    issue_number: true
+    
+  not_for_construction:
+    text: "NOT FOR\nCONSTRUCTION"
+    background_color: "#F44336"
+    text_color: "white"
+    border_color: "#C62828"
+    border_width: 3
+    font_family: "Arial Bold"
+    font_size: 11
+    padding: 10
+    rounded_corners: 6
+    watermark: true
+    
+  preliminary:
+    text: "PRELIMINARY"
+    background_color: "transparent"
+    text_color: "#FF5722"
+    border_color: "#FF5722"
+    border_width: 2
+    border_style: "dashed"
+    font_family: "Arial Bold"
+    font_size: 14
+    padding: 8
+    watermark: true
+    opacity: 0.7
+    
+# Quality Control Stamps
+qc_stamps:
+  qc_passed:
+    text: "QC PASSED"
+    background_color: "#4CAF50"
+    text_color: "white"
+    border_color: "#388E3C"
+    border_width: 2
+    font_family: "Arial Bold"
+    font_size: 10
+    padding: 6
+    rounded_corners: 3
+    include_date: true
+    inspector_field: true
+    
+  qc_failed:
+    text: "QC FAILED"
+    background_color: "#F44336"
+    text_color: "white"
+    border_color: "#C62828"
+    border_width: 2
+    font_family: "Arial Bold"
+    font_size: 10
+    padding: 6
+    rounded_corners: 3
+    include_date: true
+    inspector_field: true
+    comments_required: true
+    
+  qc_hold:
+    text: "QC HOLD"
+    background_color: "#FF9800"
+    text_color: "white"
+    border_color: "#F57F17"
+    border_width: 2
+    font_family: "Arial Bold"
+    font_size: 10
+    padding: 6
+    
+# Revision Stamps
+revision_stamps:
+  revision_cloud:
+    type: "cloud"
+    color: "#F44336"
+    line_width: 2
+    description_required: true
+    revision_letter: true
+    
+  revision_triangle:
+    type: "triangle"
+    color: "#F44336"
+    line_width: 2
+    size: 12
+    revision_number: true
+    
+# Custom Date/Time Stamps
+datetime_stamps:
+  received:
+    text: "RECEIVED\n{date}\n{time}"
+    background_color: "#607D8B"
+    text_color: "white"
+    border_color: "#455A64"
+    border_width: 1
+    font_family: "Arial"
+    font_size: 9
+    padding: 4
+    
+  processed:
+    text: "PROCESSED\n{date}\n{time}\nBy: {user}"
+    background_color: "#795548"
+    text_color: "white"
+    border_color: "#5D4037"
+    border_width: 1
+    font_family: "Arial"
+    font_size: 8
+    padding: 4
+    
+# Professional Stamps
+professional_stamps:
+  engineer_seal:
+    type: "seal"
+    diameter: 40
+    border_width: 2
+    border_color: "black"
+    text_color: "black"
+    outer_text: "LICENSED PROFESSIONAL ENGINEER"
+    center_text: "{name}\nP.E. #{license}"
+    state: "{state}"
+    font_family: "Times New Roman"
+    font_size: 8
+    
+  architect_seal:
+    type: "seal"
+    diameter: 40
+    border_width: 2
+    border_color: "black"
+    text_color: "black"
+    outer_text: "LICENSED ARCHITECT"
+    center_text: "{name}\nR.A. #{license}"
+    state: "{state}"
+    font_family: "Times New Roman"
+    font_size: 8
+    
+# Meeting/Communication Stamps
+communication_stamps:
+  rfi_required:
+    text: "RFI REQUIRED"
+    background_color: "#FF5722"
+    text_color: "white"
+    border_color: "#D84315"
+    border_width: 2
+    font_family: "Arial Bold"
+    font_size: 10
+    padding: 6
+    rounded_corners: 3
+    include_date: true
+    
+  clarification_needed:
+    text: "CLARIFICATION\nNEEDED"
+    background_color: "#FF9800"
+    text_color: "white"
+    border_color: "#F57F17"
+    border_width: 2
+    font_family: "Arial Bold"
+    font_size: 9
+    padding: 6
+    
+  coordinated:
+    text: "COORDINATED"
+    background_color: "#4CAF50"
+    text_color: "white"
+    border_color: "#388E3C"
+    border_width: 2
+    font_family: "Arial"
+    font_size: 10
+    padding: 6
+    include_date: true
+    
+# Default Stamp Settings
+defaults:
+  position: "top-right"
+  opacity: 1.0
+  rotation: 0
+  auto_size: true
+  preserve_aspect: true
+  date_format: "MM/DD/YYYY"
+  time_format: "HH:mm"
+  
+# Stamp Positioning Presets
+positions:
+  top_left: { x: 50, y: 50 }
+  top_right: { x: -100, y: 50 }
+  bottom_left: { x: 50, y: -100 }
+  bottom_right: { x: -150, y: -50 }
+  center: { x: "center", y: "center" }
+  title_block: { x: -200, y: -100 }
+  
+# Color Palettes
+color_palettes:
+  standard:
+    approved: "#4CAF50"
+    rejected: "#F44336"
+    pending: "#FF9800"
+    info: "#2196F3"
+    
+  high_contrast:
+    approved: "#006400"
+    rejected: "#8B0000"
+    pending: "#FF4500"
+    info: "#000080"
+    
+  grayscale:
+    approved: "#404040"
+    rejected: "#808080"
+    pending: "#606060"
+    info: "#202020"

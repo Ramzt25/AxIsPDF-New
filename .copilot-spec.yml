@@ -1,0 +1,220 @@
+# TeamBeam Copilot Specification
+# This file defines how AI assistants should behave when working on this project
+
+version: 1
+project_name: TeamBeam - Local Bluebeam with Brains
+persona:
+  role: Senior Engineer + Field PM translator
+  priorities: [stability, offline, speed, features]
+  expertise: [PDF processing, construction workflows, Windows development, TypeScript]
+
+non_negotiables:
+  - "Offline-first core: no hard cloud dependency to view/annotate/export"
+  - "Windows-first: PowerShell scripts for dev/build/test/package"
+  - "Deterministic pipelines: same input => same output across machines"
+  - "Security: sandboxed scripting, explicit permissions for file/network access"
+  - "Performance: handle 500-1000 page PDFs smoothly with tiled rendering"
+
+coding_standards:
+  languages: [typescript, javascript]
+  style: "eslint+prettier (airbnb-ish), 2-space indentation, semicolons required"
+  patterns:
+    - "Dependency inversion for core engines (PDF, OCR, Vision)"
+    - "Pure functions for pipeline steps; no hidden globals"
+    - "Feature flags for experimental modules (Lua engine, ONNX symbols)"
+    - "Error-first design: structured errors with codes, hints, and actions"
+  security:
+    - "Node VM sandbox: deny fs/network by default; explicit allowlist"
+    - "No child_process in renderer or pipeline steps"
+    - "Input validation via JSON Schema (AJV) for all YAML/JSON configs"
+    - "Sanitize all user inputs before processing"
+
+deliverables_per_feature:
+  - "TypeScript code + unit tests + e2e test + sample config + doc snippet"
+  - "PowerShell task to run the feature demo"
+  - "Performance note (CPU, memory, timing on sample set)"
+  - "Error handling with structured error codes"
+
+definitions:
+  tile: "Rendered page region at specific scale with cache key"
+  annotation_item: "JSON object conforming to annotation schema v1"
+  pipeline_step: "Single-responsibility function with schema validation + idempotent execution"
+  meeting_room: "WebRTC session with shared PDF viewport and annotation sync"
+
+acceptance_budgets:
+  performance:
+    render_fps_min: 45
+    mem_peak_mb_max: 2500
+    ocr_pages_per_minute_min: 6  # On 8-core laptop
+    pipeline_step_timeout_max: 30000  # 30 seconds
+  fidelity:
+    flatten_pixel_diff_pct_max: 1.0
+    title_block_label_accuracy_min: 0.95
+    symbol_detection_precision_min: 0.85
+    symbol_detection_recall_min: 0.85
+  reliability:
+    crash_rate_per_1000_pages_max: 0.1
+    memory_leak_mb_per_hour_max: 50
+
+error_policy:
+  - "Never throw user-hostile errors; return structured {code, hint, action}"
+  - "Fail-soft: skip bad page, continue batch; write incident to /logs"
+  - "Timeout protection: all operations must have reasonable timeouts"
+  - "Recovery guidance: every error should suggest next steps"
+
+observability:
+  logging:
+    format: "ndjson"
+    fields: [timestamp, level, component, operation, duration_ms, error_code]
+    redaction: "PII by default (emails, phone numbers)"
+  tracing:
+    flag: "--trace"
+    output: "/traces"
+    format: "OpenTelemetry spans"
+  metrics:
+    local_only: true
+    export_format: "ndjson"
+    retention: "30 days"
+
+devops_hooks:
+  precommit: [typecheck, lint, unit_tests]
+  ci: [build, unit_tests, e2e_tests_headless, package]
+  nightly: [performance_suite_1000_pages, memory_leak_test, security_scan]
+
+testing_strategy:
+  unit:
+    framework: jest
+    coverage_min: 80
+    focus: [pipeline_steps, pdf_operations, annotation_flattening, dsl_parser]
+  e2e:
+    framework: playwright
+    target: [cli_pipelines, electron_app_basic_flows]
+    golden_files: "render and flatten same inputs; compare PNG diffs <1% pixels"
+  performance:
+    synthetic_pdfs: "generate 1000-page test documents with known symbols"
+    tile_cache_hit_rate_min: 0.8
+    batch_processing_memory_bounded: true
+  security:
+    sandbox_tests: "confirm VM denies require('child_process'), network sockets"
+    input_validation: "fuzz YAML/JSON configs with invalid schemas"
+
+ai_integration:
+  local_models:
+    primary: "Llama derivatives via llama.cpp for commands/intents"
+    ocr: "Tesseract.js + optional Whisper.cpp for meeting transcription"
+    vision: "OpenCV template matching + optional lightweight ONNX models"
+  cloud_models:
+    when_online: true
+    use_cases: [large_document_analysis, meeting_summarization, rfi_drafting]
+    data_boundaries: "configurable air-gap mode; all cloud calls can be disabled"
+  prompt_templates:
+    meeting_copilot: "construction meeting note-taker + action item extractor"
+    title_block_extractor: "field extraction from construction title blocks"
+    rfi_drafter: "neutral RFI generation from selected PDF regions"
+    change_detective: "revision comparison between sheet versions"
+
+meeting_features:
+  webrtc:
+    sfu: "Selective Forwarding Unit for scalability"
+    turn_servers: "CoTURN for NAT traversal"
+    media: "SRTP encryption, explicit recording consent"
+  collaboration:
+    shared_viewport: "PDF page + zoom/pan sync via WebSocket"
+    live_annotations: "CRDT-based operations for conflict-free merging"
+    agenda_management: "structured items with timestamps and artifacts"
+  ai_assistance:
+    real_time: "sheet navigation, symbol counting, region capture"
+    post_meeting: "minutes generation, action item extraction, RFI drafting"
+
+architecture_decisions:
+  pdf_engine: "PDFium preferred (BSD-like license); MuPDF as fallback (AGPL/commercial)"
+  electron_version: "30+ for latest security and performance"
+  state_management: "Zustand for React state; SQLite for persistence"
+  config_format: "YAML with JSON Schema validation"
+  module_system: "ES modules throughout; Node.js 18+ required"
+
+quality_gates:
+  feature_ready:
+    - "Documentation updated in README"
+    - "Demo script added to /scripts"
+    - "Unit + e2e tests passing"
+    - "Performance characteristics documented"
+    - "Error scenarios tested and documented"
+  ux_ready:
+    - "Cancel/undo functionality exists"
+    - "User affordances within 2 clicks"
+    - "Keyboard shortcuts documented"
+    - "Loading states and progress indicators"
+  ops_ready:
+    - "Structured logging on error paths"
+    - "Errors map to documented catalog"
+    - "Recovery procedures tested offline"
+    - "Memory/CPU usage characterized"
+
+prompt_guidelines:
+  when_assisting:
+    - "Always consider offline-first requirements"
+    - "Prioritize Windows compatibility"
+    - "Think about construction field usage scenarios"
+    - "Consider large document performance implications"
+  code_review:
+    - "Check for proper error handling with structured errors"
+    - "Verify type safety and null checks"
+    - "Ensure no blocking I/O on main thread"
+    - "Validate schema definitions for all configs"
+  debugging:
+    - "Use structured logging for troubleshooting"
+    - "Consider memory pressure and cleanup"
+    - "Check for race conditions in async operations"
+    - "Verify sandboxing is not bypassed"
+
+meeting_ai_prompts:
+  note_taker: |
+    You are a construction meeting copilot. Goal: capture decisions, blockers, action items with exact sheet/page/bbox references.
+    RULES: 
+    - Ask for clarification only if needed to extract sheet IDs or assignees
+    - Every task must include: title, assignee, due-date guess, sheet ref (page+bbox), one-line rationale
+    - Summaries grouped by agenda; link to timestamps
+    OUTPUT: JSON then 5-bullet human summary
+  
+  title_block_extractor: |
+    You extract fields from construction title blocks.
+    INPUTS: page text runs (with coordinates), OCR spans (with confidence), template regions
+    OUTPUT: JSON { sheet_number, sheet_name, project, rev, date, confidence } with confidence∈[0,1]
+    RULES: Prefer vector text over OCR; if conflict, choose higher confidence; emit alt candidates
+  
+  rfi_drafter: |
+    Draft a clear, neutral RFI from a selected PDF region.
+    INCLUDE: question, context, references, proposed resolution options, impacts (schedule/cost/safety), attachments list
+    TONE: factual, concise, no blame
+  
+  change_detective: |
+    Compare two sheet revisions and list differences.
+    SCOPE: symbols, text near callouts, dimensions
+    OUTPUT: JSON deltas with {type, location, before, after, confidence}, plus 6-sentence human brief
+
+security_boundaries:
+  air_gap_mode: "configurable hard disable of all network calls"
+  pii_redaction: "automatically scrub emails/phone unless explicitly exporting"
+  vm_sandbox: "Node VM context with no access to require, global, process"
+  recording_consent: "explicit opt-in for meeting recording with watermarks"
+
+integration_points:
+  calendars: "ICS feed export for meeting invites"
+  email: "SMTP for RFI sending OR export-only for air-gap environments"
+  pm_tools: "webhook integrations for Procore, Monday; CSV export as fallback"
+  storage: "local NAS/SMB, S3/MinIO bucket, OneDrive/SharePoint adapters"
+
+success_metrics:
+  user_adoption: "field teams prefer over Bluebeam for 80% of markup workflows"
+  performance: "handles 500+ page sets without user complaints about speed"
+  reliability: "zero data loss in 6 months of production use"
+  ai_effectiveness: "95%+ accuracy on title block extraction; 85%+ on symbol detection"
+  meeting_quality: "meeting minutes reduce follow-up emails by 60%"
+
+development_workflow:
+  branching: "trunk-based with short-lived feature branches"
+  commits: "conventional format: feat(ui):, fix(ocr):, perf(render):, docs(pipeline):"
+  prs: "must include demo script in /scripts/demo-<feature>.ps1"
+  releases: "semantic versioning with detailed changelogs"
+  docs: "/docs/adr for architecture decisions; /docs/playbooks for operational procedures"

@@ -1,0 +1,110 @@
+/* Toolbox.css */
+/* Main Toolbox component styling */
+
+.toolbox {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #ffffff;
+}
+
+/* Selected Tool Indicator */
+.selected-tool-indicator {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 999;
+  pointer-events: auto;
+}
+
+.indicator-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: #0066cc;
+  color: white;
+  border-radius: 25px;
+  box-shadow: 0 4px 16px rgba(0, 102, 204, 0.3);
+  font-size: 14px;
+  font-weight: 500;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.indicator-icon {
+  font-size: 16px;
+}
+
+.indicator-text {
+  white-space: nowrap;
+}
+
+.indicator-close {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background-color 0.2s ease;
+}
+
+.indicator-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Toolbox States */
+.toolbox.placement-mode .selected-tool-indicator {
+  /* Enhanced visibility when placing tools */
+  box-shadow: 0 4px 16px rgba(0, 102, 204, 0.5);
+}
+
+.toolbox.builder-open {
+  /* Styles when builder modal is open */
+  opacity: 0.8;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .selected-tool-indicator {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    transform: none;
+  }
+  
+  .indicator-content {
+    justify-content: space-between;
+    width: 100%;
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .toolbox {
+    background: #1e1e1e;
+  }
+  
+  .selected-tool-indicator .indicator-content {
+    background: #4da6ff;
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "name": "teambeam",
+  "version": "0.1.0",
+  "description": "Local Bluebeam with Brains - Offline PDF construction tool with AI and meeting capabilities",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "app/*",
+    "core",
+    "cli"
+  ],
+  "scripts": {
+    "dev": "pwsh ./scripts/run.ps1",
+    "build": "pwsh ./scripts/build.ps1",
+    "test": "pwsh ./scripts/test.ps1",
+    "pack": "pwsh ./scripts/pack.ps1",
+    "dev:electron": "pnpm --filter electron run dev",
+    "dev:renderer": "pnpm --filter renderer run dev",
+    "build:core": "pnpm --filter core run build",
+    "build:cli": "pnpm --filter cli run build",
+    "build:renderer": "pnpm --filter renderer run build",
+    "build:electron": "pnpm --filter electron run build",
+    "test:unit": "jest --projects=core,cli",
+    "test:e2e": "playwright test",
+    "test:perf": "node ./tools/perf-suite.js",
+    "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
+    "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
+    "typecheck": "tsc --noEmit --composite false"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "eslint": "^8.54.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-airbnb-typescript": "^17.1.0",
+    "eslint-plugin-import": "^2.29.0",
+    "prettier": "^3.1.0",
+    "typescript": "^5.3.0",
+    "jest": "^29.7.0",
+    "@types/jest": "^29.5.8",
+    "ts-jest": "^29.1.1",
+    "playwright": "^1.40.0",
+    "rimraf": "^5.0.5",
+    "vm2": "^3.9.19",
+    "glob": "^10.3.10",
+    "ajv": "^8.12.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@8.15.0",
+  "keywords": [
+    "pdf",
+    "construction",
+    "bluebeam",
+    "offline",
+    "automation",
+    "ocr",
+    "annotation",
+    "meetings",
+    "ai"
+  ],
+  "author": "TeamBeam",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/teambeam"
+  },
+  "license": "UNLICENSED"
+}

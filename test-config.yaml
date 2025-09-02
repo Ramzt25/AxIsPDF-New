@@ -1,0 +1,133 @@
+# TeamBeam Pipeline Test Configuration
+# Defines test cases for validating pipeline functionality
+
+setup:
+  - "python scripts/generate-test-pdfs.py"  # Generate test PDFs first
+  - "mkdir -p output images qc-output qc-reports reports"  # Create output directories
+
+tests:
+  # Test 1: Simple OCR and text extraction
+  ocr_basic:
+    pipeline: "./configs/pipeline-examples/ocr-export.yml"
+    working_dir: "."
+    expected_outputs:
+      - "output/floor-plan-A101_text.json"
+      - "output/floor-plan-A101.txt"
+      - "output/legacy-drawing-scan_text.json"
+      - "output/legacy-drawing-scan.txt"
+    json_validations:
+      "output/floor-plan-A101_text.json":
+        - "metadata"
+        - "pages"
+        - "metadata.file"
+        - "metadata.pages"
+        - "metadata.extraction_date"
+
+  # Test 2: Batch rendering to images
+  batch_render:
+    pipeline: "./configs/pipeline-examples/batch-render.yml"
+    working_dir: "."
+    expected_outputs:
+      - "images/floor-plan-A101/page-1.png"
+      - "images/floor-plan-A101/thumb-1.png"
+      - "images/floor-plan-A101/contact-sheet.png"
+      - "images/floor-plan-A101/metadata.json"
+      - "images/site-plan-C100/page-1.png"
+      - "images/details-A201/page-1.png"
+    json_validations:
+      "images/floor-plan-A101/metadata.json":
+        - "source_file"
+        - "pages"
+        - "rendered_at"
+        - "high_res_dpi"
+
+  # Test 3: Quality control checks
+  quality_control:
+    pipeline: "./configs/pipeline-examples/quality-control.yml"
+    working_dir: "."
+    expected_outputs:
+      - "qc-reports/floor-plan-A101_qc.json"
+      - "qc-reports/site-plan-C100_qc.json"
+      - "qc-output/floor-plan-A101_qc.pdf"
+      - "qc-output/site-plan-C100_qc.pdf"
+    json_validations:
+      "qc-reports/floor-plan-A101_qc.json":
+        - "document"
+        - "qc_date"
+        - "title_block"
+        - "issues" 
+        - "status"
+        - "title_block.project_number"
+        - "title_block.drawing_number"
+
+  # Test 4: Drawing markup and review
+  markup_review:
+    pipeline: "./configs/pipeline-examples/markup-review.yml"
+    working_dir: "."
+    setup_commands:
+      - "mkdir -p drawings/for-review drawings/reviewed reports stamps"
+      - "cp test-data/drawings/*.pdf drawings/for-review/"
+    expected_outputs:
+      - "drawings/reviewed/floor-plan-A101_reviewed.pdf"
+      - "drawings/reviewed/site-plan-C100_reviewed.pdf"
+      - "reports/floor-plan-A101_review.json"
+      - "reports/site-plan-C100_review.json"
+    json_validations:
+      "reports/floor-plan-A101_review.json":
+        - "original_file"
+        - "reviewed_file"
+        - "reviewer"
+        - "review_date"
+        - "status"
+
+  # Test 5: Construction approval workflow
+  approve_workflow:
+    pipeline: "./configs/pipeline-examples/approve-and-label.yml"
+    working_dir: "."
+    setup_commands:
+      - "mkdir -p input-drawings approved-drawings reports stamps"
+      - "cp test-data/drawings/*.pdf input-drawings/"
+    expected_outputs:
+      - "approved-drawings/floor-plan-A101_APPROVED.pdf"
+      - "reports/approval-report.csv"
+      - "reports/approval-summary.json"
+    json_validations:
+      "reports/approval-summary.json":
+        - "approved_count"
+        - "total_processed"
+        - "approval_date"
+        - "approver"
+
+# Expected CLI behavior tests
+cli_tests:
+  help_command:
+    command: ["node", "./cli/dist/index.js", "--help"]
+    expect_exit_code: 0
+    expect_stdout_contains: "Usage"
+    
+  version_command:
+    command: ["node", "./cli/dist/index.js", "--version"]
+    expect_exit_code: 0
+    expect_stdout_contains: "1.0.0"
+    
+  invalid_pipeline:
+    command: ["node", "./cli/dist/index.js", "run", "nonexistent.yml"]
+    expect_exit_code: 1
+    expect_stderr_contains: "not found"
+
+# Performance benchmarks (optional)
+benchmarks:
+  small_pdf:
+    pipeline: "./configs/pipeline-examples/ocr-export.yml"
+    input_size: "< 1MB"
+    max_duration: 30  # seconds
+    
+  large_batch:
+    pipeline: "./configs/pipeline-examples/batch-render.yml"
+    input_size: "5 PDFs"
+    max_duration: 60  # seconds
+
+# Cleanup after tests
+cleanup:
+  - "rm -rf output/ images/ qc-output/ qc-reports/ reports/ approved-drawings/ drawings/"
+  - "rm -f test-results.json"

@@ -1,0 +1,188 @@
+# TeamBeam Application Configuration
+# Main configuration file for the TeamBeam application
+
+version: 1
+name: "TeamBeam Configuration"
+description: "Local Bluebeam with Brains - Application Settings"
+
+# Application Settings
+app:
+  name: "TeamBeam"
+  version: "0.1.0"
+  data_dir: "%APPDATA%/TeamBeam"  # Windows-specific
+  temp_dir: "%TEMP%/TeamBeam"
+  log_level: "info"  # trace, debug, info, warn, error
+  auto_save_interval: 300  # seconds
+  max_recent_files: 20
+
+# PDF Processing Settings
+pdf:
+  engine: "pdfium"  # pdfium, mupdf
+  max_file_size_mb: 500
+  render:
+    default_dpi: 150
+    max_dpi: 300
+    tile_size: 512
+    cache_size_mb: 1024
+    prerender_adjacent_pages: true
+  text_extraction:
+    prefer_vector_text: true
+    fallback_to_ocr: true
+    min_text_confidence: 0.7
+
+# OCR Settings
+ocr:
+  engine: "tesseract"
+  default_language: "eng"
+  available_languages:
+    - "eng"  # English
+    - "spa"  # Spanish
+    - "fra"  # French
+  tesseract:
+    psm: 3  # Page segmentation mode: Fully automatic page segmentation
+    oem: 3  # OCR Engine mode: Default based on what is available
+    timeout_ms: 30000
+    max_concurrent_workers: 4
+  auto_detect_scanned:
+    enabled: true
+    text_density_threshold: 0.01  # 1% of page area
+    min_text_runs: 10
+
+# Vision and Symbol Detection
+vision:
+  opencv:
+    template_matching:
+      default_threshold: 0.8
+      scale_range: [0.5, 2.0]
+      max_processing_time_ms: 150
+  symbols:
+    templates_dir: "./configs/symbols"
+    confidence_threshold: 0.75
+    detection_timeout_ms: 5000
+
+# Pipeline Engine
+pipeline:
+  execution:
+    timeout_ms: 300000  # 5 minutes default
+    max_concurrent_files: 4
+    continue_on_error: false
+  variables:
+    max_recursion_depth: 10
+    resolution_timeout_ms: 1000
+  validation:
+    strict_schema: true
+    allow_unknown_steps: false
+
+# Meeting Features
+meetings:
+  webrtc:
+    stun_servers:
+      - "stun:stun.l.google.com:19302"
+    turn_servers: []  # Configure for production
+    ice_timeout_ms: 10000
+  recording:
+    enabled: false  # Requires explicit enablement
+    format: "webm"
+    quality: "high"
+    watermark: true
+  ai_copilot:
+    enabled: true
+    real_time_processing: true
+    transcript_language: "en-US"
+
+# AI and Machine Learning
+ai:
+  local_models:
+    enabled: true
+    models_dir: "./models"
+    max_memory_mb: 2048
+  cloud_models:
+    enabled: true  # Can be disabled for air-gap mode
+    timeout_ms: 15000
+    retry_attempts: 3
+  features:
+    title_block_extraction: true
+    symbol_detection: true
+    meeting_transcription: true
+    rfi_generation: true
+    change_detection: true
+
+# Security Settings
+security:
+  sandbox:
+    strict_mode: true
+    allowed_modules: []  # Whitelist for VM context
+    network_access: false
+    file_system_access: false
+  encryption:
+    database_at_rest: true
+    meeting_recordings: true
+    export_files: false  # Optional
+  air_gap_mode:
+    enabled: false  # When true, disables all network features
+    
+# Performance Settings
+performance:
+  memory:
+    max_heap_mb: 4096
+    gc_interval_ms: 30000
+  rendering:
+    target_fps: 60
+    max_render_threads: 4
+    progressive_loading: true
+  caching:
+    page_cache_mb: 512
+    symbol_cache_mb: 128
+    ttl_seconds: 3600
+
+# UI/UX Settings
+ui:
+  theme: "system"  # light, dark, system
+  zoom:
+    default: 1.0
+    min: 0.1
+    max: 10.0
+    step: 0.1
+  keyboard_shortcuts:
+    enabled: true
+    vim_mode: false
+  accessibility:
+    high_contrast: false
+    screen_reader_support: true
+
+# Logging and Monitoring
+logging:
+  file_path: "%APPDATA%/TeamBeam/logs/app.log"
+  max_file_size_mb: 100
+  max_files: 10
+  format: "json"  # json, text
+  redact_pii: true
+  components:
+    pdf: "info"
+    ocr: "info"
+    pipeline: "debug"
+    meetings: "info"
+    ai: "info"
+
+# Integration Settings
+integrations:
+  email:
+    enabled: false
+    smtp_server: ""
+    port: 587
+    username: ""
+    use_tls: true
+  calendar:
+    export_format: "ics"
+    timezone: "America/New_York"
+  pm_tools:
+    enabled: false
+    webhook_timeout_ms: 10000
+
+# Development Settings (only in dev builds)
+development:
+  hot_reload: true
+  debug_tools: true
+  mock_ai_responses: false
+  synthetic_data: false
+  performance_monitoring: true

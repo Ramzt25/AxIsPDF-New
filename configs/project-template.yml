@@ -1,0 +1,181 @@
+# TeamBeam Project Template Configuration
+# Default settings for new projects
+
+# Project Information
+project:
+  name: "New Construction Project"
+  number: ""                      # Will be prompted
+  client: ""                      # Will be prompted
+  architect: ""
+  contractor: ""
+  location: ""
+  start_date: ""
+  target_completion: ""
+  
+# Project Structure
+directories:
+  drawings: "./drawings"
+  specifications: "./specs"
+  submittals: "./submittals"
+  rfi: "./rfi"
+  photos: "./photos"
+  reports: "./reports"
+  correspondence: "./correspondence"
+  
+# Drawing Standards
+drawing_standards:
+  numbering_system: "AIA"         # AIA, CSI, Custom
+  sheet_sizes: ["D", "E1", "E"]   # ARCH sizes
+  title_block: "standard"
+  revision_system: "letters"      # letters, numbers
+  
+# Workflow Templates
+workflows:
+  submittal_review:
+    - "Upload submittal package"
+    - "Technical review"
+    - "Architect review"
+    - "Client approval"
+    - "Issue approved submittal"
+    
+  rfi_process:
+    - "Create RFI"
+    - "Contractor review"
+    - "Architect response"
+    - "Issue clarification"
+    - "Update drawings if needed"
+    
+  drawing_approval:
+    - "Initial review"
+    - "Quality control check"
+    - "Stakeholder review"
+    - "Final approval"
+    - "Issue for construction"
+    
+# Default Stamps
+stamps:
+  approval:
+    text: "APPROVED"
+    color: "green"
+    border: true
+    signature_line: true
+    
+  reviewed:
+    text: "REVIEWED"
+    color: "blue"
+    border: true
+    date: true
+    
+  rejected:
+    text: "REJECTED"
+    color: "red"
+    border: true
+    comments_required: true
+    
+  preliminary:
+    text: "PRELIMINARY"
+    color: "orange"
+    border: true
+    watermark: true
+    
+# Quality Control Rules
+qc_rules:
+  title_block:
+    required_fields:
+      - "PROJECT_NUMBER"
+      - "DRAWING_NUMBER"
+      - "REVISION"
+      - "DATE"
+      - "ENGINEER_SIGNATURE"
+    
+  content_checks:
+    - "No TBD items remaining"
+    - "All dimensions verified"
+    - "Scale properly indicated"
+    - "North arrow present (plans)"
+    - "Legend complete"
+    
+  file_naming:
+    pattern: "{project_number}_{drawing_number}_{revision}.pdf"
+    case: "uppercase"
+    
+# Meeting Configuration
+meeting_rooms:
+  daily_standup:
+    duration: 15                  # minutes
+    participants: ["pm", "superintendent", "architect"]
+    agenda_template: "standup"
+    
+  design_review:
+    duration: 60
+    participants: ["architect", "engineer", "client", "contractor"]
+    agenda_template: "design_review"
+    recording: true
+    
+  rfi_review:
+    duration: 30
+    participants: ["architect", "engineer", "contractor"]
+    agenda_template: "rfi_review"
+    
+# Notification Rules
+notifications:
+  rfi_created:
+    notify: ["architect", "pm"]
+    urgency: "medium"
+    
+  drawing_updated:
+    notify: ["all_stakeholders"]
+    urgency: "low"
+    
+  deadline_approaching:
+    notify: ["pm", "assigned_reviewer"]
+    urgency: "high"
+    advance_notice: 48            # hours
+    
+# Custom Fields
+custom_fields:
+  drawing:
+    - name: "specification_section"
+      type: "text"
+      required: false
+    - name: "cost_estimate"
+      type: "currency"
+      required: false
+    - name: "priority"
+      type: "select"
+      options: ["Low", "Medium", "High", "Critical"]
+      
+  submittal:
+    - name: "lead_time"
+      type: "number"
+      unit: "days"
+    - name: "manufacturer"
+      type: "text"
+      required: true
+    - name: "model_number"
+      type: "text"
+      
+# Automation Rules
+automation:
+  # Auto-apply stamps based on conditions
+  auto_stamps:
+    - condition: "quality_score >= 95"
+      action: "apply_approved_stamp"
+    - condition: "contains_tbd_items"
+      action: "apply_preliminary_stamp"
+      
+  # Auto-route documents
+  auto_routing:
+    - document_type: "submittal"
+      route_to: ["technical_reviewer", "architect"]
+    - document_type: "rfi"
+      route_to: ["architect", "engineer"]
+      
+  # Auto-generate reports
+  auto_reports:
+    - trigger: "weekly"
+      report: "progress_summary"
+      recipients: ["pm", "client"]
+    - trigger: "drawing_updated"
+      report: "change_summary"
+      recipients: ["contractor", "superintendent"]

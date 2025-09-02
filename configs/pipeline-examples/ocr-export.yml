@@ -1,0 +1,45 @@
+# Sample Pipeline: OCR and Text Export
+# Simple pipeline to extract text from PDFs and export to JSON
+
+version: 1
+name: "OCR and Text Export"
+description: "Extract text from scanned PDFs using OCR and export structured data"
+
+# Process files matching pattern
+foreach:
+  files: "./test-data/**/*.pdf"
+  steps:
+    # Open PDF document
+    - open: "${file.path}"
+    
+    # Perform OCR on all pages
+    - ocr:
+        pages: "all"         # Force OCR on all pages
+        lang: "eng"
+        psm: 6               # Uniform block of text
+        oem: 1               # Neural nets LSTM engine
+        
+    # Extract all text content
+    - find_text:
+        name: "all_text"
+        query: "."           # Match any character (regex)
+        regex: ".*"          # Capture everything
+        
+    # Export page-by-page text
+    - export_json:
+        path: "./output/${file.name}_text.json"
+        data:
+          metadata:
+            file: "${file.path}"
+            pages: "${doc.pages}"
+            extraction_date: "${now}"
+            ocr_confidence: "${results.ocr.averageConfidence}"
+          pages: "${results.ocr.pages}"
+          
+    # Export simple text file
+    - export_text:
+        path: "./output/${file.name}.txt"
+        content: "${results.ocr.pages.map(p => p.text).join('\\n\\n')}"
+
+variables:
+  output_dir: "./output"

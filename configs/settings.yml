@@ -1,0 +1,161 @@
+# TeamBeam Application Settings
+# Global configuration for the TeamBeam application
+
+# Application Settings
+app:
+  name: "TeamBeam"
+  version: "1.0.0"
+  theme: "dark"                    # light, dark, auto
+  language: "en-US"
+  auto_save: true
+  auto_save_interval: 30           # seconds
+  max_recent_files: 10
+  
+# Default directories
+directories:
+  input: "./input"
+  output: "./output"
+  templates: "./templates"
+  stamps: "./stamps"
+  temp: "./temp"
+  config: "./config"
+  
+# PDF Processing Settings
+pdf:
+  default_dpi: 300
+  max_file_size: 500               # MB
+  cache_enabled: true
+  cache_size: 1024                 # MB
+  render_quality: "high"           # low, medium, high
+  background_color: "white"
+  text_extraction_method: "auto"   # ocr, native, auto
+  
+# OCR Settings
+ocr:
+  default_language: "eng"
+  languages: ["eng", "spa", "fra", "deu", "ita", "por"]
+  psm: 6                          # Page segmentation mode
+  oem: 1                          # OCR Engine mode (1 = Neural nets LSTM)
+  confidence_threshold: 60         # Minimum confidence for text
+  preprocess_images: true
+  enhance_contrast: true
+  remove_noise: true
+  
+# Pipeline Settings
+pipeline:
+  max_execution_time: 300          # seconds
+  concurrent_files: 4
+  retry_attempts: 3
+  retry_delay: 1000               # milliseconds
+  log_level: "info"               # debug, info, warn, error
+  
+# JavaScript Execution Settings
+javascript:
+  enabled: true
+  timeout: 5000                   # milliseconds
+  memory_limit: 16                # MB
+  allow_async: false
+  allowed_modules: []             # Whitelist of Node modules
+  
+# Security Settings
+security:
+  sandbox_js: true
+  validate_inputs: true
+  sanitize_outputs: true
+  max_script_size: 64             # KB
+  
+# Performance Settings
+performance:
+  worker_threads: 4
+  memory_limit: 2048              # MB
+  cpu_limit: 80                   # percentage
+  disk_cache: true
+  network_timeout: 30             # seconds
+  
+# Logging Settings
+logging:
+  level: "info"
+  console: true
+  file: true
+  file_path: "./logs/teambeam.log"
+  max_file_size: 10               # MB
+  max_files: 5
+  
+# UI Settings
+ui:
+  window:
+    width: 1400
+    height: 900
+    min_width: 800
+    min_height: 600
+    resizable: true
+    fullscreen: false
+  zoom:
+    default: 1.0
+    min: 0.25
+    max: 5.0
+    step: 0.25
+  toolbar:
+    visible: true
+    position: "top"               # top, bottom, left, right
+  sidebar:
+    visible: true
+    width: 300
+    position: "left"              # left, right
+    
+# Export Settings
+export:
+  image:
+    default_format: "png"         # png, jpg, pdf, svg
+    quality: 95                   # 1-100 for JPG
+    dpi: 300
+  csv:
+    delimiter: ","
+    quote_char: "\""
+    escape_char: "\\"
+    include_headers: true
+  json:
+    pretty_print: true
+    indent: 2
+    
+# Meeting Settings (for FieldBeam modal)
+meetings:
+  enabled: true
+  default_provider: "webrtc"      # webrtc, zoom, teams
+  max_participants: 50
+  recording:
+    enabled: true
+    format: "mp4"
+    quality: "720p"             # 480p, 720p, 1080p
+    include_chat: true
+    include_annotations: true
+  lobby:
+    enabled: true
+    auto_admit: "internal"        # all, internal, none
+  ai:
+    transcription: true
+    minutes: true
+    language: "en-US"
+    
+# Integration Settings
+integrations:
+  calendar:
+    providers: ["google", "outlook", "exchange"]
+    sync_enabled: true
+    sync_interval: 15             # minutes
+  cloud:
+    provider: "local"             # local, azure, aws, gcp
+    sync_enabled: false
+  ai:
+    provider: "local"             # local, openai, azure
+    model: "gpt-3.5-turbo"
+    temperature: 0.3
+    max_tokens: 2048
+    
+# Backup Settings
+backup:
+  enabled: true
+  interval: 24                    # hours
+  max_backups: 7
+  location: "./backups"
+  compress: true

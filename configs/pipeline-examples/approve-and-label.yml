@@ -1,0 +1,124 @@
+# Sample Pipeline: Approve and Label Construction Drawings
+# This pipeline processes construction PDFs to extract sheet labels and add approval stamps
+
+version: 1
+name: "Approve and Label Construction Drawings"
+description: "Batch process construction PDFs with OCR, text extraction, labeling, and approval stamps"
+
+# Process all PDFs in the drawings directory
+foreach:
+  files: "C:/Drawings/**/*.pdf"
+  steps:
+    # Open and analyze each PDF
+    - open: "${file.path}"
+    
+    # Perform OCR on scanned pages
+    - ocr:
+        pages: "auto"        # Auto-detect scanned pages
+        lang: "eng"
+        psm: 3               # Fully automatic page segmentation
+        oem: 3               # Default OCR engine
+    
+    # Extract sheet number from title block
+    - find_text:
+        name: "sheet_no"
+        query: ["SHEET NO:", "SHT NO:", "DRAWING NO:", "DWG NO:"]
+        region: 
+          anchor: "top-right"
+          width: 0.28          # 28% of page width
+          height: 0.25         # 25% of page height
+          dx: -20              # Offset from anchor
+          dy: 20
+        regex_after: "\\b([A-Z]-\\d{2,3})\\b"  # Extract pattern like "E-201"
+        case_sensitive: false
+    
+    # Try alternate location if not found
+    - find_text:
+        name: "sheet_no_alt"
+        query: ["SHEET:", "NO."]
+        region:
+          anchor: "bottom-right"
+          width: 0.3
+          height: 0.15
+        regex_after: "([A-Z]\\d{3})"
+        if: "${!results.sheet_no.matches.length}"
+    
+    # Extract project information
+    - find_text:
+        name: "project_name"
+        query: ["PROJECT:", "JOB:", "SITE:"]
+        region:
+          anchor: "top-left"
+          width: 0.4
+          height: 0.2
+        regex_after: ":\\s*(.+)"
+    
+    # Set page label from extracted text
+    - page_label:
+        from: "${results.sheet_no.matches[0]?.text || results.sheet_no_alt.matches[0]?.text}"
+        fallback: "PAGE-${page.index + 1}"
+    
+    # Add approval stamp
+    - stamp:
+        template: "Approved.png"        # Image stamp
+        position:
+          anchor: "bottom-right"
+          dx: -50
+          dy: -50
+        opacity: 0.9
+        pages: "all"
+    
+    # Add date stamp
+    - stamp:
+        text: "APPROVED ${now.substring(0, 10)}"  # Date only
+        position:
+          anchor: "bottom-right"
+          dx: -50
+          dy: -80
+        opacity: 0.8
+        pages: "all"
+    
+    # Export extraction results to CSV
+    - export_csv:
+        path: "C:/Output/drawing_labels.csv"
+        fields: ["file", "page", "label", "project", "approved_date"]
+        append: true
+    
+    # Export detailed JSON for each file
+    - export_json:
+        path: "C:/Output/details/${file.name}.json"
+        data:
+          file_info:
+            path: "${file.path}"
+            name: "${file.name}"
+            processed_date: "${now}"
+          extraction:
+            sheet_number: "${results.sheet_no.matches[0]?.text}"
+            project_name: "${results.project_name.matches[0]?.text}"
+            page_count: "${doc.pages}"
+          processing:
+            ocr_used: "${results.ocr.pages.length > 0}"
+            stamp_applied: true
+    
+    # Save the processed PDF
+    - save_as: "C:/Output/Approved/${file.name}.approved.pdf"
+    
+    # Close the document
+    - close: true
+
+# Global variables available to all steps
+variables:
+  output_base: "C:/Output"
+  stamp_opacity: 0.9
+  approval_text: "APPROVED"
+  
+# Validation settings
+validation:
+  required_fields: ["sheet_no"]
+  continue_on_missing: true
+  
+# Performance settings  
+performance:
+  max_concurrent_files: 2
+  ocr_timeout: 30000
+  page_timeout: 10000

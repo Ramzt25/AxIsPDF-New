@@ -1,0 +1,139 @@
+# Sample Pipeline: Quality Control Check
+# Automated QC checks for construction documents
+
+version: 1
+name: "Quality Control Check"
+description: "Perform automated quality control checks on construction documents"
+
+# Process all drawings in QC folder
+foreach:
+  files: "./qc-input/**/*.pdf"
+  steps:
+    # Open document
+    - open: "${file.path}"
+    
+    # Check for required title block information
+    - find_text:
+        name: "project_number"
+        query: "PROJECT\\s*(?:NO|NUMBER|#)\\s*:?\\s*([A-Z0-9\\-]+)"
+        regex: "PROJECT\\s*(?:NO|NUMBER|#)\\s*:?\\s*([A-Z0-9\\-]+)"
+        page: 1
+        
+    - find_text:
+        name: "drawing_number"
+        query: "DRAWING\\s*(?:NO|NUMBER|#)\\s*:?\\s*([A-Z0-9\\-\\.]+)"
+        regex: "DRAWING\\s*(?:NO|NUMBER|#)\\s*:?\\s*([A-Z0-9\\-\\.]+)"
+        page: 1
+        
+    - find_text:
+        name: "revision"
+        query: "REV(?:ISION)?\\s*:?\\s*([A-Z0-9]+)"
+        regex: "REV(?:ISION)?\\s*:?\\s*([A-Z0-9]+)"
+        page: 1
+        
+    - find_text:
+        name: "date"
+        query: "DATE\\s*:?\\s*(\\d{1,2}[/\\-]\\d{1,2}[/\\-]\\d{2,4})"
+        regex: "DATE\\s*:?\\s*(\\d{1,2}[/\\-]\\d{1,2}[/\\-]\\d{2,4})"
+        page: 1
+        
+    - find_text:
+        name: "signature"
+        query: "SIGNED|SEALED|APPROVED|PE|ENGINEER"
+        regex: "(SIGNED|SEALED|APPROVED|PE|ENGINEER)"
+        page: 1
+        
+    # Check for common QC issues
+    - find_text:
+        name: "cloud_markings"
+        query: "CLOUD|REVISION CLOUD"
+        regex: "(CLOUD|REVISION CLOUD)"
+        pages: "all"
+        
+    - find_text:
+        name: "tbd_items"
+        query: "TBD|TO BE DETERMINED|TBC|TO BE CONFIRMED"
+        regex: "(TBD|TO BE DETERMINED|TBC|TO BE CONFIRMED)"
+        pages: "all"
+        
+    - find_text:
+        name: "scale_issues"
+        query: "NOT TO SCALE|NTS|NO SCALE"
+        regex: "(NOT TO SCALE|NTS|NO SCALE)"
+        pages: "all"
+        
+    # Check document resolution/quality
+    - analyze_quality:
+        min_dpi: 150
+        check_text_clarity: true
+        check_line_weight: true
+        
+    # Generate QC report
+    - export_json:
+        path: "./qc-reports/${file.name}_qc.json"
+        data:
+          document: "${file.path}"
+          qc_date: "${now}"
+          title_block:
+            project_number: "${results.project_number.value || 'MISSING'}"
+            drawing_number: "${results.drawing_number.value || 'MISSING'}"
+            revision: "${results.revision.value || 'MISSING'}"
+            date: "${results.date.value || 'MISSING'}"
+            has_signature: "${results.signature.found || false}"
+          issues:
+            missing_title_info: "${!results.project_number.found || !results.drawing_number.found}"
+            tbd_items_count: "${results.tbd_items.matches.length || 0}"
+            tbd_items: "${results.tbd_items.matches || []}"
+            has_revision_clouds: "${results.cloud_markings.found || false}"
+            scale_warnings: "${results.scale_issues.matches || []}"
+            quality_issues: "${results.analyze_quality.issues || []}"
+          status: "${qc_status}"
+          
+    # Determine overall QC status
+    - calculate:
+        name: "qc_status"
+        formula: |
+          let issues = 0;
+          if (!results.project_number.found) issues++;
+          if (!results.drawing_number.found) issues++;
+          if (!results.signature.found) issues++;
+          if (results.tbd_items.matches.length > 0) issues++;
+          if (results.analyze_quality.issues.length > 0) issues++;
+          
+          if (issues === 0) return "PASS";
+          if (issues <= 2) return "PASS_WITH_NOTES";
+          return "FAIL";
+          
+    # Add QC stamp based on status
+    - if: "${qc_status === 'PASS'}"
+      then:
+        - stamp_image:
+            image: "./stamps/qc-passed.png"
+            position: "top-left"
+            x: 50
+            y: 50
+            scale: 0.7
+      else_if: "${qc_status === 'PASS_WITH_NOTES'}"
+      then:
+        - stamp_image:
+            image: "./stamps/qc-passed-notes.png"
+            position: "top-left"
+            x: 50
+            y: 50
+            scale: 0.7
+      else:
+        - stamp_image:
+            image: "./stamps/qc-failed.png"
+            position: "top-left"
+            x: 50
+            y: 50
+            scale: 0.7
+            
+    # Save QC'd document
+    - save:
+        path: "./qc-output/${file.name}_qc.pdf"
+
+variables:
+  qc_engineer: "Jane Doe, PE"
+  project_standards: "AIA-2020"
+  min_resolution: 150
