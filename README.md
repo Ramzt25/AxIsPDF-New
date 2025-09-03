@@ -1,34 +1,43 @@
-# TeamBeam - Local Bluebeam with Brains
+# TeamBeam - Web-Based PDF Construction Platform
 
-A local, offline-first, scriptable PDF construction tool for Windows that rivals core Bluebeam workflows and adds real automation/intelligence plus construction meeting capabilities.
+A web-based, intelligent PDF construction tool that provides core Bluebeam workflows with automation and construction meeting capabilities.
 
-## 🚧 Project Status: Phase 1 Development
+## 🚧 Project Status: Web Platform Development
 
-This is an active construction project. Current focus: **Headless PDF Robot** (Phase 1).
+This is an active construction project. Current focus: **Web-based PDF Platform** with database integration.
 
 ## 🎯 Vision
 
-- **Local & Offline**: All core features work without internet
-- **Windows-first**: PowerShell build/run scripts, native performance  
-- **Performance**: Handle 500–1,000 page PDFs smoothly with tiled rendering
-- **Determinism**: Batch pipelines produce consistent output across machines
-- **Security**: Sandboxed scripting, no arbitrary shell unless explicitly enabled
-- **AI-Enhanced**: Local + cloud models for intelligent document processing
-- **Meeting-Native**: WebRTC rooms built for construction workflows
+- **Web-First**: Modern web application with responsive design
+- **Database-Driven**: Comprehensive PostgreSQL schema with Supabase integration  
+- **Performance**: Handle large PDFs with efficient rendering
+- **Collaboration**: Real-time document sharing and markup
+- **Security**: Row-level security and role-based permissions
+- **AI-Enhanced**: Document analysis and intelligent processing
+- **Meeting-Native**: Built-in collaboration and communication tools
 
-## 📋 Roadmap
+## 📋 Current Architecture
 
-### Phase 1 - Headless "PDF Robot" ✅ *In Progress*
-- [x] Project structure and build system
-- [ ] Batch PDF processing (glob patterns)
-- [ ] Text extraction + OCR for scanned pages
-- [ ] Simple stamping (text/image) at coordinates
-- [ ] CLI + YAML pipeline runner
-- [ ] Save/SaveAs, page range, rotate, insert/extract
+### Web Application (`/web`)
+- React + TypeScript frontend
+- Vite build system
+- Component-based architecture
+- Responsive design
 
-### Phase 2 - Viewer + Annotation Layer
-- Electron + React viewer with fast zoom/pan
-- Annotation tools (rectangle, ellipse, arrow, text, stamps)
+### Core Services (`/core`)
+- PDF processing utilities
+- Business logic
+- Shared types and interfaces
+
+### Database (`/database`)
+- ✅ Comprehensive PostgreSQL schema
+- ✅ Multi-tenant architecture with RLS policies
+- ✅ Storage buckets for file management
+- ✅ Audit logging and triggers
+
+### CLI Tools (`/cli`)
+- Command-line utilities
+- Automation scripts
 - Undo/redo, layer toggles
 - Flatten annotations to PDF
 
