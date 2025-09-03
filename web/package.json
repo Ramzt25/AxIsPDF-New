@@ -1,7 +1,7 @@
 {
-  "name": "renderer",
+  "name": "teambeam-web",
   "version": "0.1.0",
-  "description": "TeamBeam renderer - React UI for the Electron application",
+  "description": "TeamBeam Web - React PDF Viewer Platform",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,7 +10,6 @@
     "clean": "rimraf dist"
   },
   "dependencies": {
-    "core": "workspace:*",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "zustand": "^4.4.7",
