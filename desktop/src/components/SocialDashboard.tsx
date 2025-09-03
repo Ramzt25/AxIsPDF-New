@@ -147,6 +147,41 @@ export const SocialDashboard: React.FC<SocialDashboardProps> = ({
       </div>
 
       <div className="dashboard-content">
+        {/* Mock Design Showcase */}
+        <div className="mock-showcase-section">
+          <h2>🎨 Design Prototypes & Mockups</h2>
+          <div className="mock-gallery">
+            <div className="mock-item">
+              <img src="./assets/SocialMainHub.png" alt="Social Main Hub Design" className="mock-image" />
+              <div className="mock-info">
+                <h3>Social Main Hub</h3>
+                <p>Central collaboration interface with real-time updates</p>
+              </div>
+            </div>
+            <div className="mock-item">
+              <img src="./assets/Mockup main screen.png" alt="Main Screen Mockup" className="mock-image" />
+              <div className="mock-info">
+                <h3>Main Screen Layout</h3>
+                <p>Professional PDF viewer with enhanced controls</p>
+              </div>
+            </div>
+            <div className="mock-item">
+              <img src="./assets/Modal base.png" alt="Modal Base Design" className="mock-image" />
+              <div className="mock-info">
+                <h3>Modal Components</h3>
+                <p>Flexible modal system for various interactions</p>
+              </div>
+            </div>
+            <div className="mock-item">
+              <img src="./assets/toolbox.png" alt="Toolbox Interface" className="mock-image" />
+              <div className="mock-info">
+                <h3>Advanced Toolbox</h3>
+                <p>Professional tools for markup and annotation</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Meeting Invites Section */}
         {meetingInvites.length > 0 && (
           <div className="meeting-invites-section">
@@ -284,8 +319,7 @@ export const SocialDashboard: React.FC<SocialDashboardProps> = ({
                       <div className="activity-status">
                         {activity.priority && (
                           <span 
-                            className="priority-badge"
-                            style={{ backgroundColor: getPriorityColor(activity.priority) }}
+                            className={`priority-badge priority-${activity.priority}`}
                           >
                             {activity.priority}
                           </span>

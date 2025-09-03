@@ -143,7 +143,7 @@ class TeamBeamApp {
 
     // Load app content
     if (this.isDev) {
-      this.mainWindow.loadURL('http://localhost:5174');
+      this.mainWindow.loadURL('http://localhost:5176');
       this.mainWindow.webContents.openDevTools();
     } else {
       this.mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));

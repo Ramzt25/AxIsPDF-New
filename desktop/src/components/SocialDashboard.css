@@ -99,6 +99,85 @@
   gap: var(--tb-space-8);
 }
 
+/* Mock Design Showcase */
+.mock-showcase-section {
+  background: var(--tb-surface-secondary);
+  border-radius: var(--tb-radius-xl);
+  padding: var(--tb-space-6);
+  border: 1px solid var(--tb-border-primary);
+}
+
+.mock-showcase-section h2 {
+  margin: 0 0 var(--tb-space-6) 0;
+  font-size: var(--tb-font-size-xl);
+  font-weight: var(--tb-font-weight-semibold);
+  color: var(--tb-text-primary);
+}
+
+.mock-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--tb-space-6);
+}
+
+.mock-item {
+  background: var(--tb-surface-primary);
+  border-radius: var(--tb-radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--tb-border-primary);
+  transition: all var(--tb-transition-fast);
+  box-shadow: var(--tb-shadow-sm);
+}
+
+.mock-item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--tb-shadow-lg);
+  border-color: var(--tb-accent-blue);
+}
+
+.mock-image {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  object-position: top;
+  border-bottom: 1px solid var(--tb-border-primary);
+}
+
+.mock-info {
+  padding: var(--tb-space-4);
+}
+
+.mock-info h3 {
+  margin: 0 0 var(--tb-space-2) 0;
+  font-size: var(--tb-font-size-base);
+  font-weight: var(--tb-font-weight-semibold);
+  color: var(--tb-text-primary);
+}
+
+.mock-info p {
+  margin: 0;
+  font-size: var(--tb-font-size-sm);
+  color: var(--tb-text-secondary);
+  line-height: var(--tb-line-height-relaxed);
+}
+
+/* Priority badge colors */
+.priority-badge.priority-critical {
+  background: #ef4444;
+}
+
+.priority-badge.priority-high {
+  background: #f97316;
+}
+
+.priority-badge.priority-medium {
+  background: #eab308;
+}
+
+.priority-badge.priority-low {
+  background: #22c55e;
+}
+
 /* Meeting Invites */
 .meeting-invites-section h2 {
   margin: 0 0 var(--tb-space-4) 0;

@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "concurrently \"npm run dev:vite\" \"npm run dev:electron\"",
     "dev:vite": "vite",
-    "dev:electron": "tsc -b electron && electron dist/main.js",
+    "dev:electron": "set NODE_ENV=development && tsc -b electron && electron dist/main.js",
     "build": "npm run build:renderer && npm run build:main",
     "build:renderer": "vite build",
     "build:main": "tsc -b electron",
@@ -33,13 +33,16 @@
   "dependencies": {
     "@playwright/test": "^1.55.0",
     "@supabase/supabase-js": "^2.57.0",
+    "@tailwindcss/postcss": "^4.1.12",
     "autoprefixer": "^10.4.21",
     "electron-updater": "^6.3.4",
+    "lucide-react": "^0.542.0",
     "pdf-lib": "^1.17.1",
     "pdfjs-dist": "^5.4.149",
     "postcss": "^8.5.6",
     "react-pdf": "^10.1.0",
     "sharp": "^0.33.5",
+    "tailwindcss": "^4.1.12",
     "tesseract.js": "^5.1.1",
     "yaml": "^2.6.1"
   },

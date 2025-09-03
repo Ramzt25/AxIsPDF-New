@@ -1,325 +1,383 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import {
+  Plus,
+  FolderOpen,
+  FileText,
+  Zap,
+  Eye,
+  CheckCircle,
+  ChevronDown,
+  ZoomIn,
+  ZoomOut,
+  RotateCw,
+  HelpCircle,
+  Layers,
+  MousePointer,
+  Square,
+  Circle,
+  Triangle,
+  Ruler,
+  Lightbulb,
+  Archive,
+  Minus,
+  Maximize2,
+  Settings,
+  Users,
+  Home
+} from 'lucide-react';
+import { SocialDashboard } from './SocialDashboard';
+import './Dashboard.pro.css';
 
 interface DashboardProps {
   currentProject: string | null;
   recentProjects: string[];
   onOpenProject: (path: string) => void;
-  onNewProject?: () => void;
-  onImportPdfs?: () => void;
+  onNewProject: () => void;
 }
 
 interface ProjectStats {
   totalDocuments: number;
   totalPages: number;
-  lastActivity: Date | null;
   pipelineRuns: number;
 }
 
-interface RecentActivity {
+interface ActivityItem {
   id: string;
-  type: 'pipeline' | 'document' | 'annotation' | 'export';
+  type: 'upload' | 'annotation' | 'measurement' | 'collaboration' | 'pipeline';
   description: string;
   timestamp: Date;
-  status: 'success' | 'warning' | 'error';
+  status: 'success' | 'warning' | 'error' | 'info';
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ 
-  currentProject, 
-  recentProjects, 
+const Dashboard: React.FC<DashboardProps> = ({
+  currentProject,
+  recentProjects,
   onOpenProject,
-  onNewProject,
-  onImportPdfs 
+  onNewProject
 }) => {
-  const navigate = useNavigate();
+  // State for different dashboard views
+  const [currentView, setCurrentView] = useState<'pdf' | 'social'>('pdf');
+  const [isLoading, setIsLoading] = useState(false);
   const [projectStats, setProjectStats] = useState<ProjectStats>({
     totalDocuments: 0,
     totalPages: 0,
-    lastActivity: null,
     pipelineRuns: 0
   });
-  const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [recentActivity, setRecentActivity] = useState<ActivityItem[]>([]);
+  const [selectedTool, setSelectedTool] = useState<string>('annotation');
+  const [currentDocument, setCurrentDocument] = useState<string>('A200.pdf');
+  const [zoomLevel, setZoomLevel] = useState<number>(71);
+
+  // Navigation tools for left sidebar
+  const navigationTools = [
+    { id: 'annotation', icon: MousePointer, label: 'Annotation', active: true },
+    { id: 'annotations', icon: FileText, label: 'Annotations' },
+    { id: 'measurements', icon: Ruler, label: 'Measurements' },
+    { id: 'layers', icon: Layers, label: 'Layers' },
+    { id: 'insights', icon: Lightbulb, label: 'Insights' },
+    { id: 'archive', icon: Archive, label: 'Archive' }
+  ];
+
+  // Drawing tools for toolbar
+  const drawingTools = [
+    { id: 'select', icon: MousePointer, name: 'Select' },
+    { id: 'pen', icon: FileText, name: 'Pen' },
+    { id: 'text', icon: FileText, name: 'Text' },
+    { id: 'square', icon: Square, name: 'Rectangle' },
+    { id: 'circle', icon: Circle, name: 'Circle' },
+    { id: 'arrow', icon: Triangle, name: 'Arrow' }
+  ];
+
+  // AI Insights data
+  const aiInsights = {
+    extractedInfo: {
+      room: 'OFFICE',
+      ceiling: '8.50"',
+      length: '20.35',
+      door: '3\' - 0"'
+    },
+    missingDimensions: ['8\' - 5"'],
+    potentialMarkups: [
+      { type: 'dimension', color: 'orange' },
+      { type: 'annotation', color: 'blue' }
+    ]
+  };
 
   useEffect(() => {
     if (currentProject) {
-      loadProjectStats();
-      loadRecentActivity();
+      setIsLoading(true);
+      // Simulate loading project stats
+      setTimeout(() => {
+        setProjectStats({
+          totalDocuments: 15,
+          totalPages: 247,
+          pipelineRuns: 12
+        });
+        
+        setRecentActivity([
+          {
+            id: '1',
+            type: 'annotation',
+            description: 'Added dimension markup to OFFICE room',
+            timestamp: new Date(Date.now() - 1000 * 60 * 5),
+            status: 'success'
+          },
+          {
+            id: '2',
+            type: 'measurement',
+            description: 'Measured hallway width: 10.87"',
+            timestamp: new Date(Date.now() - 1000 * 60 * 15),
+            status: 'success'
+          },
+          {
+            id: '3',
+            type: 'upload',
+            description: 'Uploaded A200.pdf to project',
+            timestamp: new Date(Date.now() - 1000 * 60 * 30),
+            status: 'success'
+          }
+        ]);
+        
+        setIsLoading(false);
+      }, 1000);
     }
   }, [currentProject]);
 
-  const loadProjectStats = async () => {
-    setIsLoading(true);
-    try {
-      // Load project statistics from storage
-      if (window.teamBeam?.store) {
-        const stats = await window.teamBeam.store.get(`project-stats-${currentProject}`);
-        if (stats) {
-          setProjectStats({
-            ...stats,
-            lastActivity: stats.lastActivity ? new Date(stats.lastActivity) : null
-          });
-        }
-      }
-    } catch (error) {
-      console.error('Failed to load project stats:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const loadRecentActivity = async () => {
-    try {
-      // Load recent activity from storage
-      if (window.teamBeam?.store) {
-        const activity = await window.teamBeam.store.get(`recent-activity-${currentProject}`);
-        if (activity && Array.isArray(activity)) {
-          setRecentActivity(activity.map(item => ({
-            ...item,
-            timestamp: new Date(item.timestamp)
-          })).slice(0, 10)); // Show last 10 activities
-        }
-      }
-    } catch (error) {
-      console.error('Failed to load recent activity:', error);
-    }
-  };
-
-  const quickActions = [
-    {
-      title: 'Pipeline Editor',
-      description: 'Create and edit processing pipelines',
-      icon: '⚙️',
-      action: () => navigate('/pipeline-editor'),
-      color: 'primary'
-    },
-    {
-      title: 'Batch Processor',
-      description: 'Process multiple documents at once',
-      icon: '📦',
-      action: () => navigate('/batch-processor'),
-      color: 'secondary'
-    },
-    {
-      title: 'Import PDFs',
-      description: 'Add new documents to project',
-      icon: '📄',
-      action: onImportPdfs,
-      color: 'accent'
-    },
-    {
-      title: 'FieldBeam Meetings',
-      description: 'Start video collaboration session',
-      icon: '🎥',
-      action: () => navigate('/fieldbeam-meetings'),
-      color: 'warning'
-    }
-  ];
-
-  const getActivityIcon = (type: string) => {
-    switch (type) {
-      case 'pipeline': return '⚙️';
-      case 'document': return '📄';
-      case 'annotation': return '✏️';
-      case 'export': return '📤';
-      default: return '📋';
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'success': return 'text-green-600';
-      case 'warning': return 'text-yellow-600';
-      case 'error': return 'text-red-600';
-      default: return 'text-gray-600';
-    }
-  };
-
-  const formatTimeAgo = (date: Date) => {
+  const formatTimeAgo = (date: Date): string => {
     const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins} minutes ago`;
-    if (diffHours < 24) return `${diffHours} hours ago`;
-    if (diffDays < 7) return `${diffDays} days ago`;
-    return date.toLocaleDateString();
+    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+    
+    if (diffInMinutes < 1) return 'Just now';
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
+    return `${Math.floor(diffInMinutes / 1440)}d ago`;
   };
 
   return (
-    <div className="dashboard">
-      <div className="dashboard-header">
-        <h1>TeamBeam Dashboard</h1>
-        <p className="dashboard-subtitle">Construction Document Intelligence Platform</p>
+    <div className="professional-dashboard">
+      {/* Professional Header - Enhanced for Desktop */}
+      <div className="dashboard-header-pro">
+        <div className="header-left">
+          <div className="logo-section">
+            <div className="logo-icon">📄</div>
+            <span className="app-title">AxIs PDF Intelligence</span>
+          </div>
+          
+          <div className="project-selector">
+            <FolderOpen size={16} />
+            <span className="project-label">Project A</span>
+            <ChevronDown size={16} />
+          </div>
+          
+          <div className="document-selector">
+            <FileText size={16} />
+            <span className="document-name">{currentDocument}</span>
+            <ChevronDown size={16} />
+          </div>
+        </div>
+
+        <div className="header-center">
+          <div className="zoom-controls">
+            <button className="zoom-btn" title="Zoom Out">
+              <ZoomOut size={16} />
+            </button>
+            <span className="zoom-level">{zoomLevel}%</span>
+            <button className="zoom-btn" title="Zoom In">
+              <ZoomIn size={16} />
+            </button>
+          </div>
+          
+          <div className="view-controls">
+            <button className="view-btn" title="Rotate">
+              <RotateCw size={16} />
+            </button>
+            <button className="view-btn active" title="Fit to Window">
+              <Square size={16} />
+            </button>
+          </div>
+        </div>
+
+        <div className="header-right">
+          {/* View Navigation */}
+          <div className="view-navigation">
+            <button 
+              className={`view-nav-btn ${currentView === 'pdf' ? 'active' : ''}`}
+              onClick={() => setCurrentView('pdf')}
+              title="PDF Viewer"
+            >
+              <FileText size={16} />
+              PDF
+            </button>
+            <button 
+              className={`view-nav-btn ${currentView === 'social' ? 'active' : ''}`}
+              onClick={() => setCurrentView('social')}
+              title="Social Dashboard"
+            >
+              <Users size={16} />
+              Social
+            </button>
+          </div>
+          
+          <button className="header-btn" title="Settings">
+            <HelpCircle size={16} />
+          </button>
+          <button className="header-btn ai-btn" title="AI Assistant">
+            <Lightbulb size={16} />
+            AI
+          </button>
+        </div>
       </div>
 
-      {currentProject ? (
-        <div className="dashboard-content">
-          {/* Project Overview */}
-          <div className="dashboard-section project-overview">
-            <h2>Current Project</h2>
-            <div className="project-card">
-              <div className="project-info">
-                <h3 title={currentProject}>
-                  📁 {currentProject.split('/').pop() || 'Untitled Project'}
-                </h3>
-                <p className="project-path">{currentProject}</p>
+      {/* Main Content Area */}
+      <div className="dashboard-main-pro">
+        {/* Left Navigation Sidebar */}
+        <div className="nav-sidebar">
+          {navigationTools.map((tool) => {
+            const IconComponent = tool.icon;
+            return (
+              <div
+                key={tool.id}
+                className={`nav-tool ${selectedTool === tool.id ? 'active' : ''}`}
+                onClick={() => setSelectedTool(tool.id)}
+                title={tool.label}
+              >
+                <IconComponent size={20} />
+                <span className="nav-label">{tool.label}</span>
               </div>
-              
-              {isLoading ? (
-                <div className="project-stats loading">
-                  <div className="loading-spinner">Loading...</div>
-                </div>
-              ) : (
-                <div className="project-stats">
-                  <div className="stat-item">
-                    <span className="stat-value">{projectStats.totalDocuments}</span>
-                    <span className="stat-label">Documents</span>
-                  </div>
-                  <div className="stat-item">
-                    <span className="stat-value">{projectStats.totalPages}</span>
-                    <span className="stat-label">Pages</span>
-                  </div>
-                  <div className="stat-item">
-                    <span className="stat-value">{projectStats.pipelineRuns}</span>
-                    <span className="stat-label">Pipeline Runs</span>
-                  </div>
-                  <div className="stat-item">
-                    <span className="stat-value">
-                      {projectStats.lastActivity ? formatTimeAgo(projectStats.lastActivity) : 'Never'}
-                    </span>
-                    <span className="stat-label">Last Activity</span>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
+            );
+          })}
+        </div>
 
-          {/* Quick Actions */}
-          <div className="dashboard-section quick-actions">
-            <h2>Quick Actions</h2>
-            <div className="action-grid">
-              {quickActions.map((action, index) => (
-                <button
-                  key={index}
-                  className={`action-card ${action.color}`}
-                  onClick={action.action}
-                  disabled={!action.action}
-                >
-                  <div className="action-icon">{action.icon}</div>
-                  <div className="action-content">
-                    <h3>{action.title}</h3>
-                    <p>{action.description}</p>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
+        {/* Central Content Area */}
+        <div className="content-area">
+          {currentView === 'social' ? (
+            /* Social Dashboard View */
+            <SocialDashboard 
+              currentUserId="user123"
+              currentUserName="Sarah Johnson"
+            />
+          ) : currentProject ? (
+            <>
+              {/* Drawing Toolbar */}
+              <div className="drawing-toolbar">
+                {drawingTools.map((tool) => {
+                  const IconComponent = tool.icon;
+                  return (
+                    <button key={tool.id} className="drawing-tool" title={tool.name}>
+                      <IconComponent size={16} />
+                    </button>
+                  );
+                })}
+              </div>
 
-          {/* Recent Activity */}
-          <div className="dashboard-section recent-activity">
-            <h2>Recent Activity</h2>
-            {recentActivity.length > 0 ? (
-              <div className="activity-list">
-                {recentActivity.map((activity) => (
-                  <div key={activity.id} className="activity-item">
-                    <div className="activity-icon">{getActivityIcon(activity.type)}</div>
-                    <div className="activity-content">
-                      <p className="activity-description">{activity.description}</p>
-                      <span className="activity-time">{formatTimeAgo(activity.timestamp)}</span>
-                    </div>
-                    <div className={`activity-status ${getStatusColor(activity.status)}`}>
-                      {activity.status === 'success' && '✓'}
-                      {activity.status === 'warning' && '⚠'}
-                      {activity.status === 'error' && '✗'}
-                    </div>
+              {/* Main Canvas/Content */}
+              <div className="canvas-area">
+                <div className="document-preview">
+                  <div className="blueprint-mockup">
+                    <div className="room-label office">OFFICE</div>
+                    <div className="room-label hallway">HALLWAY</div>
+                    <div className="dimension-line">4.08"</div>
+                    <div className="dimension-line vertical">10.87"</div>
+                    <div className="dimension-arrow orange"></div>
+                    <div className="dimension-arrow blue"></div>
+                    <div className="office-highlight">OFFICE</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom Status Bar */}
+              <div className="status-bar">
+                <div className="status-left">
+                  <span className="markups-count">3 unresolved markups</span>
+                  <div className="markup-indicators">
+                    <div className="markup-dot active"></div>
+                    <div className="markup-dot"></div>
+                    <div className="markup-dot"></div>
+                  </div>
+                </div>
+                
+                <div className="status-right">
+                  <span className="comments-label">Comments</span>
+                </div>
+              </div>
+            </>
+          ) : (
+            /* Welcome State */
+            <div className="welcome-professional">
+              <div className="welcome-content">
+                <div className="welcome-icon-pro">📄</div>
+                <h2>Welcome to AxIs PDF Intelligence</h2>
+                <p>Professional construction document processing platform</p>
+                
+                <div className="welcome-actions-pro">
+                  <button className="btn-pro primary" onClick={onNewProject}>
+                    <Plus size={16} />
+                    Create New Project
+                  </button>
+                  <button className="btn-pro secondary" onClick={() => onOpenProject('')}>
+                    <FolderOpen size={16} />
+                    Open Project
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Right AI Insights Panel */}
+        <div className="ai-insights-panel">
+          <div className="panel-header">
+            <Lightbulb size={16} />
+            <span>AI Insights</span>
+          </div>
+          
+          <div className="insights-content">
+            <div className="extracted-info">
+              <h4>Extracted information</h4>
+              <div className="info-items">
+                <div className="info-item">
+                  <span className="info-label">Room:</span>
+                  <span className="info-value">{aiInsights.extractedInfo.room}</span>
+                </div>
+                <div className="info-item">
+                  <span className="info-label">Ceiling:</span>
+                  <span className="info-value">{aiInsights.extractedInfo.ceiling}</span>
+                </div>
+                <div className="info-item">
+                  <span className="info-label">Length:</span>
+                  <span className="info-value">{aiInsights.extractedInfo.length}</span>
+                </div>
+                <div className="info-item">
+                  <span className="info-label">Door:</span>
+                  <span className="info-value">{aiInsights.extractedInfo.door}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="missing-dimensions">
+              <div className="missing-header">
+                <CheckCircle size={16} />
+                <span>Missing dimension</span>
+              </div>
+              <div className="missing-item">
+                {aiInsights.missingDimensions[0]}
+                <button className="expand-btn">→</button>
+              </div>
+            </div>
+
+            <div className="potential-markups">
+              <h4>Potential markups</h4>
+              <div className="markup-suggestions">
+                {aiInsights.potentialMarkups.map((markup, index) => (
+                  <div key={index} className={`markup-suggestion ${markup.color}`}>
+                    <div className="markup-line"></div>
                   </div>
                 ))}
               </div>
-            ) : (
-              <div className="empty-state">
-                <p>No recent activity</p>
-                <span className="empty-subtitle">Activity will appear here as you work with your project</span>
-              </div>
-            )}
-          </div>
-        </div>
-      ) : (
-        <div className="dashboard-content no-project">
-          <div className="welcome-section">
-            <div className="welcome-icon">🏗️</div>
-            <h2>Welcome to TeamBeam!</h2>
-            <p>Your intelligent construction document processing platform</p>
-            
-            <div className="welcome-actions">
-              <button className="btn-primary" onClick={onNewProject}>
-                <span className="btn-icon">+</span>
-                Create New Project
-              </button>
-              <button className="btn-secondary" onClick={() => onOpenProject('')}>
-                <span className="btn-icon">📂</span>
-                Open Existing Project
-              </button>
-            </div>
-          </div>
-
-          <div className="getting-started">
-            <h3>Getting Started</h3>
-            <div className="feature-highlights">
-              <div className="feature-item">
-                <div className="feature-icon">📄</div>
-                <h4>PDF Processing</h4>
-                <p>Advanced text extraction and OCR capabilities</p>
-              </div>
-              <div className="feature-item">
-                <div className="feature-icon">⚙️</div>
-                <h4>Pipeline Automation</h4>
-                <p>Create custom workflows for document processing</p>
-              </div>
-              <div className="feature-item">
-                <div className="feature-icon">🎥</div>
-                <h4>Video Collaboration</h4>
-                <p>Real-time meetings with document sharing</p>
-              </div>
-              <div className="feature-item">
-                <div className="feature-icon">📊</div>
-                <h4>Analytics & Reports</h4>
-                <p>Track progress and generate insights</p>
-              </div>
             </div>
           </div>
         </div>
-      )}
-
-      {/* Recent Projects Sidebar */}
-      {recentProjects.length > 0 && (
-        <div className="dashboard-sidebar">
-          <h3>Recent Projects</h3>
-          <div className="recent-projects-list">
-            {recentProjects.slice(0, 5).map((project, index) => (
-              <button
-                key={index}
-                className="recent-project-item"
-                onClick={() => onOpenProject(project)}
-                title={project}
-              >
-                <div className="project-icon">📁</div>
-                <span className="project-name">
-                  {project.split('/').pop() || 'Untitled'}
-                </span>
-              </button>
-            ))}
-            {recentProjects.length > 5 && (
-              <div className="more-projects">
-                +{recentProjects.length - 5} more projects
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      </div>
     </div>
   );
 };
